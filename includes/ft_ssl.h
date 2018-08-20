@@ -19,9 +19,11 @@
 # define G(b, c, d) ((b & d) | (c & ~d))
 # define H(b, c, d) (b ^ c ^ d)
 # define I(b, c, d) (c ^ (b | ~d))
-# define LEFTROTATE(x, c) (x << c) | (x >> (32 - c))
+# define LEFTROTATE(x, c) (((x) << (c)) | ((x) >> (32 - (c))))
 
-int32_t g_s[64] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17,
+# define DEBUG 1
+
+int32_t g_r[64] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17,
 	22, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 4, 11, 16, 23,
 	4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 6, 10, 15, 21, 6, 10, 15, 21,
 	6, 10, 15, 21, 6, 10, 15, 21};
@@ -43,5 +45,27 @@ int32_t g_k[64] = {
 	0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
 	0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
 	0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391};
+
+typedef struct		s_md5
+{
+	char			*data;
+	size_t			size_all;
+	size_t			message_len;
+}					t_md5;
+
+typedef struct		s_hash
+{
+	int				h0;
+	int				h1;
+	int				h2;
+	int				h3;
+	int				h0_modify;
+	int				h1_modify;
+	int				h2_modify;
+	int				h3_modify;
+	size_t			g;
+	int				funct;
+	uint32_t		*w;
+}					t_hash;
 
 #endif
