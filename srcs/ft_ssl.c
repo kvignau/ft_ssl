@@ -12,6 +12,23 @@
 
 #include "../includes/ft_ssl.h"
 
+void		my_print_bits(char opt)
+{
+	int i;
+
+	i = 7;
+	ft_putstr("BITS -> ");
+	while (i >= 0)
+	{
+		if ((opt >> i) & 0x1)
+			ft_putnbr(1);
+		else
+			ft_putnbr(0);
+		i--;	
+	}
+	ft_putchar('\n');
+}
+
 void    print_bits(unsigned char octet)
 {
 	int z = 128, oct = octet;
@@ -142,7 +159,7 @@ void		ft_hash_proc(t_md5 md5, t_hash *hash)
 	print_md5(hash);
 }
 
-void		ft_md5(char *val)
+void		ft_md5_string(char *val)
 {
 	t_md5	md5;
 	size_t 	msg_len_bits;
@@ -162,6 +179,36 @@ void		ft_md5(char *val)
 	msg_len_bits = md5.message_len * 8;
 	ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
 	ft_hash_proc(md5, &hash);
+}
+
+void		ft_md5(char *val, char *opt)
+{
+// 	t_md5	md5;
+// 	size_t 	msg_len_bits;
+// 	t_hash	hash;
+
+	if ((*opt) & OPT_S)
+	{
+		ft_md5_string(val);
+		(*opt) = (*opt) & ~OPT_S;
+		ft_putchar('\n');
+		my_print_bits(*opt);
+	}
+	// GESTION FILE
+	// ft_init_hash(&hash);
+	// md5.message_len = ft_strlen(val);
+	// md5.size_all = md5.message_len + 1;
+	// while (md5.size_all % 64 != 56)
+	// 	md5.size_all++;
+	// md5.size_all += 8;
+	// md5.data = (char *)malloc(sizeof(char) * md5.size_all);
+	// ft_memcpy(md5.data, val, md5.message_len);
+
+	// md5.data[md5.message_len] = (char)(1 << 7);
+	// ft_memset(md5.data + md5.message_len + 1, 0, md5.size_all - (md5.message_len + 1));
+	// msg_len_bits = md5.message_len * 8;
+	// ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
+	// ft_hash_proc(md5, &hash);
 }
 
 static int			ft_check_options(char *arg, char *opt)
@@ -217,7 +264,10 @@ int			main(int argc, char **argv)
 			return (EXIT_FAILURE);
 		i++;
 	}
-	// AFFICHER OPTION BIT A BIT !
-	ft_md5(argv[2]);
+	// TO DEL AFFICHER OPTION BIT A BIT !
+	my_print_bits(opt);
+	// AND TO DEL
+	// AVANCER ARGV EN FONCTION DES ARGS ET DES OPTIONS
+	ft_md5(argv[3], &opt);
 	return (0);
 }
