@@ -164,10 +164,60 @@ void		ft_md5(char *val)
 	ft_hash_proc(md5, &hash);
 }
 
+static int			ft_check_options(char *arg, char *opt)
+{
+	int		i;
+
+	i = 1;
+	while (arg && arg[i])
+	{
+		if (arg[i] == 'p')
+			(*opt) =	(*opt) | OPT_P;
+		else if (arg[i] == 'q')
+			(*opt) =	(*opt) | OPT_Q;
+		else if (arg[i] == 'r')
+			(*opt) =	(*opt) | OPT_R;
+		else if (arg[i] == 's')
+			(*opt) =	(*opt) | OPT_S;
+		else
+		{
+			// ft_printf("ls: illegal option -- %c\n", arg[i]);
+			// ft_printf("./ft_ls: illegal option -- %c\n", arg[i]);
+			write(2, "ft_ssl: illegal option -- ", 22);
+			write(2, &arg[i], 1);
+			write(2, "\nusage: ls [-pqrs] [file ...]\n", 63);
+			// write(2, "\nusage: ./ft_ls [larRt] [file ...]\n", 35);
+			// ft_printf("usage: ./ft_ls [larRt] [file ...]\n");
+			return (EXIT_FAILURE);
+		}
+		i++;
+	}
+	return (1);
+}
+
 int			main(int argc, char **argv)
 {
-	if (argc < 2)
+	int		i;
+	char	opt;
+
+	opt = 0;
+	i = 2;
+	if (argc < 2 || (ft_strcmp(argv[1], "md5") != 0 && ft_strcmp(argv[1], "sha256") != 0))
 		return (print_usage(argv[0]));
-	ft_md5(argv[1]);
+	while (i < argc && argv[i][0] == '-')
+	{
+		if (argv[i][1] == '\0')
+			break ;
+		else if (argv[i][1] == '-')
+		{
+			i++;
+			break ;
+		}
+		else if (ft_check_options(argv[i], &opt) == 0)
+			return (EXIT_FAILURE);
+		i++;
+	}
+	// AFFICHER OPTION BIT A BIT !
+	ft_md5(argv[2]);
 	return (0);
 }
