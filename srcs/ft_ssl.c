@@ -37,17 +37,19 @@ int		print_usage(char *str)
 
 void	ft_init_hash(t_hash *hash)
 {
-	(*hash).h0 = 0x67452301;
-	(*hash).h1 = 0xEFCDAB89;
-	(*hash).h2 = 0x98BADCFE;
-	(*hash).h3 = 0x10325476;
+	(*hash).h[0] = 0x67452301;
+	(*hash).h[1] = 0xEFCDAB89;
+	(*hash).h[2] = 0x98BADCFE;
+	(*hash).h[3] = 0x10325476;
 	(*hash).g = 0;
 	(*hash).funct = 0;
 	(*hash).w = NULL;
-	(*hash).h0_modify = 0;
-	(*hash).h1_modify = 0;
-	(*hash).h2_modify = 0;
-	(*hash).h3_modify = 0;
+	(*hash).h_mod[0] = 0;
+	(*hash).h_mod[1] = 0;
+	(*hash).h_mod[2] = 0;
+	(*hash).h_mod[3] = 0;
+	// (*hash).lo = 0;
+	// (*hash).hi = 0;
 	// return (hash);
 }
 
@@ -55,13 +57,13 @@ void		print_md5(t_hash *hash)
 {
 	uint8_t *p;
 
-	p = (uint8_t *)&hash->h0;
+	p = (uint8_t *)&hash->h[0];
 	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h1;
+	p = (uint8_t *)&hash->h[1];
 	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h2;
+	p = (uint8_t *)&hash->h[2];
 	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h3;
+	p = (uint8_t *)&hash->h[3];
 	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
 }
 
@@ -69,17 +71,17 @@ void		ft_fill_hash(t_hash *hash, int choice)
 {
 	if (choice == 0)
 	{
-		hash->h0_modify = hash->h0;
-		hash->h1_modify = hash->h1;
-		hash->h2_modify = hash->h2;
-		hash->h3_modify = hash->h3;
+		hash->h_mod[0] = hash->h[0];
+		hash->h_mod[1] = hash->h[1];
+		hash->h_mod[2] = hash->h[2];
+		hash->h_mod[3] = hash->h[3];
 	}
 	else
 	{
-		hash->h0 += hash->h0_modify;
-		hash->h1 += hash->h1_modify;
-		hash->h2 += hash->h2_modify;
-		hash->h3 += hash->h3_modify;
+		hash->h[0] += hash->h_mod[0];
+		hash->h[1] += hash->h_mod[1];
+		hash->h[2] += hash->h_mod[2];
+		hash->h[3] += hash->h_mod[3];
 	}
 }
 
@@ -87,11 +89,11 @@ void		ft_rotate_md5(t_hash *hash, int i)
 {
 	int		tmp;
 
-	tmp = hash->h3_modify;
-	hash->h3_modify = hash->h2_modify;
-	hash->h2_modify = hash->h1_modify;
-	hash->h1_modify = hash->h1_modify + LEFTROTATE((hash->h0_modify + hash->funct + g_k[i] + hash->w[hash->g]), g_r[i]);
-	hash->h0_modify = tmp;
+	tmp = hash->h_mod[3];
+	hash->h_mod[3] = hash->h_mod[2];
+	hash->h_mod[2] = hash->h_mod[1];
+	hash->h_mod[1] = hash->h_mod[1] + LEFTROTATE((hash->h_mod[0] + hash->funct + g_k[i] + hash->w[hash->g]), g_r[i]);
+	hash->h_mod[0] = tmp;
 }
 
 void		function_md5(t_hash *hash, int i)
@@ -100,29 +102,29 @@ void		function_md5(t_hash *hash, int i)
 	{
 		if (i < 16)
 		{
-			hash->funct = F(hash->h1_modify, hash->h2_modify, hash->h3_modify);
+			hash->funct = F(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
 			hash->g = i;
 		}
 		else if (i < 32)
 		{
-			hash->funct = G(hash->h1_modify, hash->h2_modify, hash->h3_modify);
+			hash->funct = G(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
 			hash->g = (5 * i + 1) % 16;
 		}
 		else if (i < 48)
 		{
-			hash->funct = H(hash->h1_modify, hash->h2_modify, hash->h3_modify);
+			hash->funct = H(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
 			hash->g = (3 * i + 5) % 16;
 		}
 		else
 		{
-			hash->funct = I(hash->h1_modify, hash->h2_modify, hash->h3_modify);
+			hash->funct = I(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
 			hash->g = (7 * i) % 16;
 		}
 		ft_rotate_md5(hash, i);
 	}
 }
 
-void		ft_hash(t_md5 md5, t_hash *hash)
+void		ft_hash_proc(t_md5 md5, t_hash *hash)
 {
 	size_t		offset;
 	int		i;
@@ -159,7 +161,7 @@ void		ft_md5(char *val)
 	ft_memset(md5.data + md5.message_len + 1, 0, md5.size_all - (md5.message_len + 1));
 	msg_len_bits = md5.message_len * 8;
 	ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
-	ft_hash(md5, &hash);
+	ft_hash_proc(md5, &hash);
 }
 
 int			main(int argc, char **argv)

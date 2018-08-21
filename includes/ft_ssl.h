@@ -15,6 +15,11 @@
 
 # include "../ft_printf/includes/ft_printf.h"
 
+# define OPT_P (1 << 0)
+# define OPT_Q (OPT_P << 1)
+# define OPT_R (OPT_Q << 1)
+# define OPT_S (OPT_R << 1)
+
 # define F(b, c, d) ((b & c) | (~b & d))
 # define G(b, c, d) ((b & d) | (c & ~d))
 # define H(b, c, d) (b ^ c ^ d)
@@ -55,17 +60,13 @@ typedef struct		s_md5
 
 typedef struct		s_hash
 {
-	int				h0;
-	int				h1;
-	int				h2;
-	int				h3;
-	int				h0_modify;
-	int				h1_modify;
-	int				h2_modify;
-	int				h3_modify;
+	int				h[8];
+	int				h_mod[8];
 	size_t			g;
 	int				funct;
 	uint32_t		*w;
+	// int				lo;
+	// int				hi;
 }					t_hash;
 
 #endif
