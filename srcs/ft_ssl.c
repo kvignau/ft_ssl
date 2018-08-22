@@ -54,7 +54,7 @@ int		print_usage(char *str)
 {
 	ft_putstr("usage: ");
 	ft_putstr(str);
-	ft_putstr(" [hash] [command options] [command arguments]");
+	ft_putstr(" [hash] [command options] [command arguments]\n");
 	return (EXIT_FAILURE);
 }
 
@@ -72,30 +72,15 @@ void	ft_init_hash(t_hash *hash, char *name)
 	(*hash).h_mod[1] = 0;
 	(*hash).h_mod[2] = 0;
 	(*hash).h_mod[3] = 0;
-	// (*hash).lo = 0;
-	// (*hash).hi = 0;
-	// return (hash);
 }
 
-void		print_md5(t_hash *hash, char opt)
+void		ft_print_hash(t_hash *hash)
 {
 	int		i;
 	int		j;
 	uint8_t *p;
 
 	i = 0;
-	if ((opt & OPT_P) && (opt & OPT_STDIN))
-			ft_printf("%s", hash->file_name);
-	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
-	{
-		if (!(opt & OPT_Q))
-		{
-			if (opt & OPT_S)
-				ft_printf("MD5 (\"%s\") = ", hash->file_name);
-			else
-				ft_printf("MD5 (%s) = ", hash->file_name);
-		}
-	}
 	while (i < 4)
 	{
 		p = (uint8_t *)&hash->h[i];
@@ -111,6 +96,23 @@ void		print_md5(t_hash *hash, char opt)
 		}
 		i++;
 	}
+}
+
+void		print_md5(t_hash *hash, char opt)
+{
+	if ((opt & OPT_P) && (opt & OPT_STDIN))
+			ft_printf("%s", hash->file_name);
+	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
+	{
+		if (!(opt & OPT_Q))
+		{
+			if (opt & OPT_S)
+				ft_printf("MD5 (\"%s\") = ", hash->file_name);
+			else
+				ft_printf("MD5 (%s) = ", hash->file_name);
+		}
+	}
+	ft_print_hash(hash);
 	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
 	{
 		if (opt & OPT_S)
@@ -230,7 +232,6 @@ int			ft_md5(char *val, char *opt)
 	{
 		ft_md5_string(val, (*opt), val);
 		(*opt) = (*opt) & ~OPT_S;
-		// my_print_bits(*opt);
 	}
 	else
 	{
@@ -259,21 +260,6 @@ int			ft_md5(char *val, char *opt)
 		close(fd);
 	}
 	return (EXIT_SUCCESS);
-	// GESTION FILE
-	// ft_init_hash(&hash);
-	// md5.message_len = ft_strlen(val);
-	// md5.size_all = md5.message_len + 1;
-	// while (md5.size_all % 64 != 56)
-	// 	md5.size_all++;
-	// md5.size_all += 8;
-	// md5.data = (char *)malloc(sizeof(char) * md5.size_all);
-	// ft_memcpy(md5.data, val, md5.message_len);
-
-	// md5.data[md5.message_len] = (char)(1 << 7);
-	// ft_memset(md5.data + md5.message_len + 1, 0, md5.size_all - (md5.message_len + 1));
-	// msg_len_bits = md5.message_len * 8;
-	// ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
-	// ft_hash_proc(md5, &hash);
 }
 
 static int			ft_check_options(char *arg, char *opt)
@@ -303,15 +289,46 @@ static int			ft_check_options(char *arg, char *opt)
 	return (EXIT_SUCCESS);
 }
 
+void		free_hash_names(char **hash_names)
+{
+	int		i;
+
+	i = 0;
+	while (hash_names[i])
+	{
+		free(hash_names[i]);
+		i++;
+	}
+	free(hash_names);
+}
+
 int			main(int argc, char **argv)
 {
 	int		i;
+	int		nb_hash;
 	char	opt;
+	char	**hash_names;
 
+	nb_hash = 0;
+	hash_names = NULL;
 	opt = 0;
 	i = 2;
-	if (argc < 2 || (ft_strcmp(argv[1], "md5") != 0 && ft_strcmp(argv[1], "sha256") != 0))
+	if (argc < 2)
 		return (print_usage(argv[0]));
+	hash_names = ft_strsplit(HASH, '|');
+	while (hash_names[nb_hash])
+	{
+		if (ft_strcmp(argv[1], hash_names[nb_hash]) == 0)
+		{
+			opt = opt | OPT_GH;
+			break ;
+		}
+		nb_hash++;
+	}
+	if (!(opt & OPT_GH))
+	{
+		return (print_usage(argv[0]));
+	}
 	while (i < argc && argv[i][0] == '-')
 	{
 		if (argv[i][1] == '\0')
@@ -325,22 +342,49 @@ int			main(int argc, char **argv)
 			return (EXIT_FAILURE);
 		i++;
 	}
-	int ret = 0;
+	// PUT STDIN FUNCTION HERE
+	// ft_stdin();
+	/*
+	ft_stdin()
+	{
+		int ret;
+		char buf[BUFF_SIZE + 1];
+		char *str;
+
+		ret = 0;
+		str = NULL;
+		if (i >= argc || opt & OPT_P)
+		{
+			opt = opt | OPT_STDIN;
+			while ((ret = read(0, buf, BUFF_SIZE)) > 0)
+			{
+				if (ret < 0)
+				{
+					return (print_errors("Read error"));
+				}
+				buf[ret] = '\0';
+				if (!str)
+					str = ft_strdup(buf);
+				else
+					str = ft_strjoin(str, buf);
+			}
+			ft_md5_string(str, opt, str);
+			opt = opt & ~OPT_STDIN;
+		}
+	}
+	*/
+	// CREATE FUNCTION INIT HASH CHOOSE GOOD FUNCTION AND PUT ALL NEXT IN NEW FUNCTION MD5 INIT
+	// ft_init_hash(hash_names[nb_hash]);
+	free_hash_names(hash_names);
+	int ret;
 	char buf[BUFF_SIZE + 1];
-	char *str = NULL;
-	if (i >= argc || opt & OPT_P)//!isatty(0))//(ret = read(0, buf, BUFF_SIZE)) > 0)
+	char *str;
+
+	ret = 0;
+	str = NULL;
+	if (i >= argc || opt & OPT_P)
 	{
 		opt = opt | OPT_STDIN;
-		// if (ret < 0)
-		// {
-		// 	return (print_errors("Read error"));
-		// }
-		// buf[ret] = '\0';
-		// // write(1, buf, ret);
-		// if (!str)
-		// 	str = ft_strdup(buf);
-		// // else
-		// // 	str = ft_strjoin(str, buf);
 		while ((ret = read(0, buf, BUFF_SIZE)) > 0)
 		{
 			if (ret < 0)
@@ -348,7 +392,6 @@ int			main(int argc, char **argv)
 				return (print_errors("Read error"));
 			}
 			buf[ret] = '\0';
-			// write(1, buf, ret);
 			if (!str)
 				str = ft_strdup(buf);
 			else
@@ -357,13 +400,7 @@ int			main(int argc, char **argv)
 		ft_md5_string(str, opt, str);
 		opt = opt & ~OPT_STDIN;
 	}
-	// }
-	// 	ft_putstr("GESTION ENTREE STANDARD");
-	// }
 	i--;
-	// TO DEL AFFICHER OPTION BIT A BIT !
-	// my_print_bits(opt);
-	// AND TO DEL
 	while (i++ < argc - 1)
 	{
 		ft_md5(argv[i], &opt);

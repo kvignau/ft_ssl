@@ -19,11 +19,14 @@
 
 # define BUFF_SIZE 1024
 
+# define HASH "md5|sha256"
+
 # define OPT_P (1 << 0)
 # define OPT_Q (OPT_P << 1)
 # define OPT_R (OPT_Q << 1)
 # define OPT_S (OPT_R << 1)
 # define OPT_STDIN (OPT_S << 1)
+# define OPT_GH (OPT_STDIN << 1)
 
 # define F(b, c, d) ((b & c) | (~b & d))
 # define G(b, c, d) ((b & d) | (c & ~d))
