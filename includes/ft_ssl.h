@@ -15,6 +15,7 @@
 
 # include "../ft_printf/includes/ft_printf.h"
 # include <fcntl.h>
+#include <stdio.h>
 
 # define BUFF_SIZE 1024
 
@@ -22,6 +23,7 @@
 # define OPT_Q (OPT_P << 1)
 # define OPT_R (OPT_Q << 1)
 # define OPT_S (OPT_R << 1)
+# define OPT_STDIN (OPT_S << 1)
 
 # define F(b, c, d) ((b & c) | (~b & d))
 # define G(b, c, d) ((b & d) | (c & ~d))

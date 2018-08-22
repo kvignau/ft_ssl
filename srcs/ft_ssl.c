@@ -84,11 +84,17 @@ void		print_md5(t_hash *hash, char opt)
 	uint8_t *p;
 
 	i = 0;
-	if (!(opt & OPT_Q))
+	if ((opt & OPT_P) && (opt & OPT_STDIN))
+			ft_printf("%s", hash->file_name);
+	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
 	{
-		ft_putstr("MD5 (");
-		ft_putstr(hash->file_name);
-		ft_putstr(") = ");
+		if (!(opt & OPT_Q))
+		{
+			if (opt & OPT_S)
+				ft_printf("MD5 (\"%s\") = ", hash->file_name);
+			else
+				ft_printf("MD5 (%s) = ", hash->file_name);
+		}
 	}
 	while (i < 4)
 	{
@@ -96,11 +102,21 @@ void		print_md5(t_hash *hash, char opt)
 		j = 0;
 		while (j < 4)
 		{
-			ft_putstr(ft_itoa_base_uimax(p[j], 16));
-			// ft_printf("%x", p[j]);
+			ft_printf("%02x", p[j]);
+			// IF LEAKS USE -> 
+			// if (ft_strlen(ft_itoa_base_uimax(p[j], 16)) == 1)
+			// 	ft_putchar('0');
+			// ft_putstr(ft_itoa_base_uimax(p[j], 16));
 			j++;
 		}
 		i++;
+	}
+	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
+	{
+		if (opt & OPT_S)
+			ft_printf(" \"%s\"", hash->file_name);
+		else
+			ft_printf(" %s", hash->file_name);
 	}
 	ft_putchar('\n');
 }
@@ -214,7 +230,6 @@ int			ft_md5(char *val, char *opt)
 	{
 		ft_md5_string(val, (*opt), val);
 		(*opt) = (*opt) & ~OPT_S;
-		ft_putchar('\n');
 		// my_print_bits(*opt);
 	}
 	else
@@ -225,25 +240,23 @@ int			ft_md5(char *val, char *opt)
 			print_errors(val);
 			return (print_errors(": No such file or directory\n"));
 		}
-		while ((ret = read(fd, buf, BUFF_SIZE)) != 0)
+		while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
 		{
 			if (ret < 0)
 			{
 				if (str)
 					free(str);
-				return (print_errors("READ ERROR"));
+				return (print_errors("Read error"));
 			}
 			buf[ret] = '\0';
 			if (!str)
 				str = ft_strdup(buf);
 			else
 				str = ft_strjoin(str, buf);
-			// write(1, buf, ret);
 		}
 		ft_md5_string(str, (*opt), val);
 		free(str);
 		close(fd);
-		// ft_printf("%s", str);
 	}
 	return (EXIT_SUCCESS);
 	// GESTION FILE
@@ -312,8 +325,41 @@ int			main(int argc, char **argv)
 			return (EXIT_FAILURE);
 		i++;
 	}
-	if (i >= argc)
-		ft_putstr("GESTION ENTREE STANDARD");
+	int ret = 0;
+	char buf[BUFF_SIZE + 1];
+	char *str = NULL;
+	if (i >= argc || opt & OPT_P)//!isatty(0))//(ret = read(0, buf, BUFF_SIZE)) > 0)
+	{
+		opt = opt | OPT_STDIN;
+		// if (ret < 0)
+		// {
+		// 	return (print_errors("Read error"));
+		// }
+		// buf[ret] = '\0';
+		// // write(1, buf, ret);
+		// if (!str)
+		// 	str = ft_strdup(buf);
+		// // else
+		// // 	str = ft_strjoin(str, buf);
+		while ((ret = read(0, buf, BUFF_SIZE)) > 0)
+		{
+			if (ret < 0)
+			{
+				return (print_errors("Read error"));
+			}
+			buf[ret] = '\0';
+			// write(1, buf, ret);
+			if (!str)
+				str = ft_strdup(buf);
+			else
+				str = ft_strjoin(str, buf);
+		}
+		ft_md5_string(str, opt, str);
+		opt = opt & ~OPT_STDIN;
+	}
+	// }
+	// 	ft_putstr("GESTION ENTREE STANDARD");
+	// }
 	i--;
 	// TO DEL AFFICHER OPTION BIT A BIT !
 	// my_print_bits(opt);
