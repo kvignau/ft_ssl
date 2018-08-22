@@ -14,6 +14,9 @@
 # define FT_SSL_H
 
 # include "../ft_printf/includes/ft_printf.h"
+# include <fcntl.h>
+
+# define BUFF_SIZE 1024
 
 # define OPT_P (1 << 0)
 # define OPT_Q (OPT_P << 1)
@@ -60,6 +63,7 @@ typedef struct		s_md5
 
 typedef struct		s_hash
 {
+	char			*file_name;
 	int				h[8];
 	int				h_mod[8];
 	size_t			g;

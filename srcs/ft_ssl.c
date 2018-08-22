@@ -12,6 +12,12 @@
 
 #include "../includes/ft_ssl.h"
 
+int		print_errors(char *str)
+{
+	write(2, str, ft_strlen(str));
+	return (EXIT_FAILURE);
+}
+
 void		my_print_bits(char opt)
 {
 	int i;
@@ -49,11 +55,12 @@ int		print_usage(char *str)
 	ft_putstr("usage: ");
 	ft_putstr(str);
 	ft_putstr(" [hash] [command options] [command arguments]");
-	return (-1);
+	return (EXIT_FAILURE);
 }
 
-void	ft_init_hash(t_hash *hash)
+void	ft_init_hash(t_hash *hash, char *name)
 {
+	(*hash).file_name = name;
 	(*hash).h[0] = 0x67452301;
 	(*hash).h[1] = 0xEFCDAB89;
 	(*hash).h[2] = 0x98BADCFE;
@@ -70,18 +77,32 @@ void	ft_init_hash(t_hash *hash)
 	// return (hash);
 }
 
-void		print_md5(t_hash *hash)
+void		print_md5(t_hash *hash, char opt)
 {
+	int		i;
+	int		j;
 	uint8_t *p;
 
-	p = (uint8_t *)&hash->h[0];
-	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h[1];
-	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h[2];
-	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
-	p = (uint8_t *)&hash->h[3];
-	ft_printf("%2.2x%2.2x%2.2x%2.2x", p[0], p[1], p[2], p[3]);
+	i = 0;
+	if (!(opt & OPT_Q))
+	{
+		ft_putstr("MD5 (");
+		ft_putstr(hash->file_name);
+		ft_putstr(") = ");
+	}
+	while (i < 4)
+	{
+		p = (uint8_t *)&hash->h[i];
+		j = 0;
+		while (j < 4)
+		{
+			ft_putstr(ft_itoa_base_uimax(p[j], 16));
+			// ft_printf("%x", p[j]);
+			j++;
+		}
+		i++;
+	}
+	ft_putchar('\n');
 }
 
 void		ft_fill_hash(t_hash *hash, int choice)
@@ -141,7 +162,7 @@ void		function_md5(t_hash *hash, int i)
 	}
 }
 
-void		ft_hash_proc(t_md5 md5, t_hash *hash)
+void		ft_hash_proc(t_md5 md5, t_hash *hash, char opt)
 {
 	size_t		offset;
 	int		i;
@@ -156,16 +177,16 @@ void		ft_hash_proc(t_md5 md5, t_hash *hash)
 		ft_fill_hash(hash, 1);
 		offset += 64;
 	}
-	print_md5(hash);
+	print_md5(hash, opt);
 }
 
-void		ft_md5_string(char *val)
+void		ft_md5_string(char *val, char opt, char *name)
 {
 	t_md5	md5;
 	size_t 	msg_len_bits;
 	t_hash	hash;
 
-	ft_init_hash(&hash);
+	ft_init_hash(&hash, name);
 	md5.message_len = ft_strlen(val);
 	md5.size_all = md5.message_len + 1;
 	while (md5.size_all % 64 != 56)
@@ -178,22 +199,49 @@ void		ft_md5_string(char *val)
 	ft_memset(md5.data + md5.message_len + 1, 0, md5.size_all - (md5.message_len + 1));
 	msg_len_bits = md5.message_len * 8;
 	ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
-	ft_hash_proc(md5, &hash);
+	ft_hash_proc(md5, &hash, opt);
 }
 
-void		ft_md5(char *val, char *opt)
+int			ft_md5(char *val, char *opt)
 {
-// 	t_md5	md5;
-// 	size_t 	msg_len_bits;
-// 	t_hash	hash;
+	int		fd;
+	int		ret;
+	char	buf[BUFF_SIZE + 1];
+	char	*str;
 
+	str = NULL;
 	if ((*opt) & OPT_S)
 	{
-		ft_md5_string(val);
+		ft_md5_string(val, (*opt), val);
 		(*opt) = (*opt) & ~OPT_S;
 		ft_putchar('\n');
-		my_print_bits(*opt);
+		// my_print_bits(*opt);
 	}
+	else
+	{
+		if ((fd = open(val, O_RDONLY)) < 0)
+		{
+			print_errors("ft_ssl: md5: ");
+			print_errors(val);
+			return (print_errors(": No such file or directory\n"));
+		}
+		while ((ret = read(fd, buf, BUFF_SIZE)) != 0)
+		{
+			if (ret < 0)
+			{
+				return (print_errors("READ ERROR"));
+			}
+			buf[ret] = '\0';
+			if (!str)
+				str = ft_strdup(buf);
+			else
+				str = ft_strjoin(str, buf);
+			// write(1, buf, ret);
+		}
+		ft_md5_string(str, (*opt), val);
+		// ft_printf("%s", str);
+	}
+	return (EXIT_SUCCESS);
 	// GESTION FILE
 	// ft_init_hash(&hash);
 	// md5.message_len = ft_strlen(val);
@@ -228,18 +276,14 @@ static int			ft_check_options(char *arg, char *opt)
 			(*opt) =	(*opt) | OPT_S;
 		else
 		{
-			// ft_printf("ls: illegal option -- %c\n", arg[i]);
-			// ft_printf("./ft_ls: illegal option -- %c\n", arg[i]);
-			write(2, "ft_ssl: illegal option -- ", 22);
-			write(2, &arg[i], 1);
-			write(2, "\nusage: ls [-pqrs] [file ...]\n", 63);
-			// write(2, "\nusage: ./ft_ls [larRt] [file ...]\n", 35);
-			// ft_printf("usage: ./ft_ls [larRt] [file ...]\n");
+			print_errors("ft_ssl: illegal option -- ");
+			print_errors(&arg[i]);
+			print_errors("\nAvailable options: ft_ssl [-pqrs]\n");
 			return (EXIT_FAILURE);
 		}
 		i++;
 	}
-	return (1);
+	return (EXIT_SUCCESS);
 }
 
 int			main(int argc, char **argv)
@@ -260,14 +304,19 @@ int			main(int argc, char **argv)
 			i++;
 			break ;
 		}
-		else if (ft_check_options(argv[i], &opt) == 0)
+		else if (ft_check_options(argv[i], &opt) == EXIT_FAILURE)
 			return (EXIT_FAILURE);
 		i++;
 	}
+	if (i >= argc)
+		ft_putstr("GESTION ENTREE STANDARD");
+	i--;
 	// TO DEL AFFICHER OPTION BIT A BIT !
-	my_print_bits(opt);
+	// my_print_bits(opt);
 	// AND TO DEL
-	// AVANCER ARGV EN FONCTION DES ARGS ET DES OPTIONS
-	ft_md5(argv[3], &opt);
+	while (i++ < argc - 1)
+	{
+		ft_md5(argv[i], &opt);
+	}
 	return (0);
 }
