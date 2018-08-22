@@ -229,6 +229,8 @@ int			ft_md5(char *val, char *opt)
 		{
 			if (ret < 0)
 			{
+				if (str)
+					free(str);
 				return (print_errors("READ ERROR"));
 			}
 			buf[ret] = '\0';
@@ -239,6 +241,8 @@ int			ft_md5(char *val, char *opt)
 			// write(1, buf, ret);
 		}
 		ft_md5_string(str, (*opt), val);
+		free(str);
+		close(fd);
 		// ft_printf("%s", str);
 	}
 	return (EXIT_SUCCESS);
