@@ -286,12 +286,11 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 			str = ft_strdup("\0");
 		g_functions[hash_choice](str, (*opt), val);
 		free(str);
-
 	}
 	return (EXIT_SUCCESS);
 }
 
-static int			ft_check_options(char *arg, char *opt)
+static int	ft_check_options(char *arg, char *opt)
 {
 	int		i;
 
@@ -331,87 +330,35 @@ void		free_hash_names(char **hash_names)
 	free(hash_names);
 }
 
-int			main(int argc, char **argv)
+static int	ft_options(int *i, char *opt, int argc, char **argv)
 {
-	int		i;
-	int		hash_choice;
-	char	opt;
-	char	**hash_names;
-
-	hash_choice = 0;
-	hash_names = NULL;
-	opt = 0;
-	i = 2;
-	if (argc < 2)
-		return (print_usage(argv[0]));
-	hash_names = ft_strsplit(HASH, '|');
-	while (hash_names[hash_choice])
+	while ((*i) < argc && argv[(*i)][0] == '-')
 	{
-		if (ft_strcmp(argv[1], hash_names[hash_choice]) == 0)
+		if (argv[(*i)][1] == '\0')
+			break ;
+		else if (argv[(*i)][1] == '-')
 		{
-			opt = opt | OPT_GH;
+			(*i)++;
 			break ;
 		}
-		hash_choice++;
-	}
-	if (!(opt & OPT_GH))
-		return (print_usage(argv[0]));
-	while (i < argc && argv[i][0] == '-')
-	{
-		if (argv[i][1] == '\0')
-			break ;
-		else if (argv[i][1] == '-')
-		{
-			i++;
-			break ;
-		}
-		else if (ft_check_options(argv[i], &opt) == EXIT_FAILURE)
+		else if (ft_check_options(argv[(*i)], opt) == EXIT_FAILURE)
 			return (EXIT_FAILURE);
-		i++;
+		(*i)++;
 	}
-	// PUT STDIN FUNCTION HERE
-	// ft_stdin();
-	/*
-	ft_stdin()
-	{
-		int ret;
-		char buf[BUFF_SIZE + 1];
-		char *str;
+	return (EXIT_SUCCESS);
+}
 
-		ret = 0;
-		str = NULL;
-		if (i >= argc || opt & OPT_P)
-		{
-			opt = opt | OPT_STDIN;
-			while ((ret = read(0, buf, BUFF_SIZE)) > 0)
-			{
-				if (ret < 0)
-				{
-					return (print_errors("Read error"));
-				}
-				buf[ret] = '\0';
-				if (!str)
-					str = ft_strdup(buf);
-				else
-					str = ft_strjoin(str, buf);
-			}
-			ft_md5_string(str, opt, str);
-			opt = opt & ~OPT_STDIN;
-		}
-	}
-	*/
-	// CREATE FUNCTION INIT HASH CHOOSE GOOD FUNCTION AND PUT ALL NEXT IN NEW FUNCTION MD5 INIT
-	// ft_init_hash(hash_names[hash_choice]);
-	free_hash_names(hash_names);
+int			ft_stdin(int i, int argc, char *opt, int hash_choice)
+{
 	int ret;
 	char buf[BUFF_SIZE + 1];
 	char *str;
 
 	ret = 0;
 	str = NULL;
-	if (i >= argc || opt & OPT_P)
+	if (i >= argc || (*opt) & OPT_P)
 	{
-		opt = opt | OPT_STDIN;
+		(*opt) = (*opt) | OPT_STDIN;
 		while ((ret = read(0, buf, BUFF_SIZE)) > 0)
 		{
 			if (ret < 0)
@@ -424,13 +371,56 @@ int			main(int argc, char **argv)
 			else
 				str = ft_strjoin(str, buf);
 		}
-		g_functions[hash_choice](str, opt, str);
-		opt = opt & ~OPT_STDIN;
+		g_functions[hash_choice](str, (*opt), str);
+		(*opt) = (*opt) & ~OPT_STDIN;
 	}
+	return (EXIT_SUCCESS);
+}
+
+int			ft_hash_name(int *hash_choice, char *opt, char *algo)
+{
+	char	**hash_names;
+
+	hash_names = NULL;
+	hash_names = ft_strsplit(HASH, '|');
+	while (hash_names[(*hash_choice)])
+	{
+		if (ft_strcmp(algo, hash_names[(*hash_choice)]) == 0)
+		{
+			(*opt) = (*opt) | OPT_GH;
+			free_hash_names(hash_names);
+			return (EXIT_SUCCESS);
+		}
+		(*hash_choice)++;
+	}
+	if (hash_names)
+		free_hash_names(hash_names);
+	print_errors("HASH: ");
+	print_errors(algo);
+	return (print_errors(" does not exist"));
+}
+
+int			main(int argc, char **argv)
+{
+	int		i;
+	int		hash_choice;
+	char	opt;
+
+	hash_choice = 0;
+	opt = 0;
+	i = 2;
+	if (argc < 2)
+		return (print_usage(argv[0]));
+	if (ft_hash_name(&hash_choice, &opt, argv[1]) == EXIT_FAILURE)
+		return (EXIT_FAILURE);
+	if (!(opt & OPT_GH))
+		return (print_usage(argv[0]));
+	if (ft_options(&i, &opt, argc, argv) == EXIT_FAILURE)
+		return (EXIT_FAILURE);
+	if (ft_stdin(i, argc, &opt, hash_choice) == EXIT_FAILURE)
+		return (EXIT_FAILURE);
 	i--;
 	while (i++ < argc - 1)
-	{
 		ft_algo_choice(argv[i], &opt, hash_choice);
-	}
 	return (0);
 }
