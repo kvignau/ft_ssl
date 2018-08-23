@@ -78,4 +78,25 @@ typedef struct		s_hash
 	// int				hi;
 }					t_hash;
 
+typedef void	(*t_funct)(char *val, char opt, char *name);
+
+// TO DEL
+void		my_print_bits(char opt);
+void    	print_bits(unsigned char octet);
+
+int			print_usage(char *str);
+int			print_errors(char *str);
+void		ft_init_hash(t_hash *hash, char *name);
+void		print_md5(t_hash *hash, char opt);
+void		ft_fill_hash(t_hash *hash, int choice);
+void		ft_rotate_md5(t_hash *hash, int i);
+void		function_md5(t_hash *hash, int i);
+void		ft_hash_proc(t_md5 md5, t_hash *hash, char opt);
+void		ft_md5_string(char *val, char opt, char *name);
+int			ft_algo_choice(char *val, char *opt, int hash_choice);
+void		free_hash_names(char **hash_names);
+void		ft_sha256_string(char *val, char opt, char *name);
+
+t_funct			g_functions[] = {ft_md5_string, ft_sha256_string};
+
 #endif

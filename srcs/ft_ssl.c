@@ -52,9 +52,9 @@ void    print_bits(unsigned char octet)
 
 int		print_usage(char *str)
 {
-	ft_putstr("usage: ");
-	ft_putstr(str);
-	ft_putstr(" [hash] [command options] [command arguments]\n");
+	ft_putstr_fd("usage: ", 2);
+	ft_putstr_fd(str, 2);
+	ft_putstr_fd(" [hash] [command options] [command arguments]\n", 2);
 	return (EXIT_FAILURE);
 }
 
@@ -220,7 +220,19 @@ void		ft_md5_string(char *val, char opt, char *name)
 	ft_hash_proc(md5, &hash, opt);
 }
 
-int			ft_md5(char *val, char *opt)
+int			ft_open_file(int *fd, char *val)
+{
+	if (((*fd) = open(val, O_RDONLY)) < 0)
+	{
+		print_errors("ft_ssl: md5: ");
+		print_errors(val);
+		print_errors(": No such file or directory\n");
+		return (EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
+}
+
+char		*ft_files(char *val)
 {
 	int		fd;
 	int		ret;
@@ -228,36 +240,53 @@ int			ft_md5(char *val, char *opt)
 	char	*str;
 
 	str = NULL;
+	if (ft_open_file(&fd, val) == EXIT_FAILURE)
+		return (NULL);
+	while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
+	{
+		if (ret < 0)
+		{
+			if (str)
+				free(str);
+			print_errors("Read error");
+			return (NULL);
+		}
+		buf[ret] = '\0';
+		if (!str)
+			str = ft_strdup(buf);
+		else
+			str = ft_strjoin(str, buf);
+	}
+	close(fd);
+	return (str);
+}
+
+void		ft_sha256_string(char *val, char opt, char *name)
+{
+	val = NULL;
+	opt = 0;
+	name = NULL;
+	ft_printf("COUCOU JE SUIS UN SHA256\n");
+}
+
+int			ft_algo_choice(char *val, char *opt, int hash_choice)
+{
+	char	*str;
+
+	str = NULL;
 	if ((*opt) & OPT_S)
 	{
-		ft_md5_string(val, (*opt), val);
+		g_functions[hash_choice](val, (*opt), val);
 		(*opt) = (*opt) & ~OPT_S;
 	}
 	else
 	{
-		if ((fd = open(val, O_RDONLY)) < 0)
-		{
-			print_errors("ft_ssl: md5: ");
-			print_errors(val);
-			return (print_errors(": No such file or directory\n"));
-		}
-		while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
-		{
-			if (ret < 0)
-			{
-				if (str)
-					free(str);
-				return (print_errors("Read error"));
-			}
-			buf[ret] = '\0';
-			if (!str)
-				str = ft_strdup(buf);
-			else
-				str = ft_strjoin(str, buf);
-		}
-		ft_md5_string(str, (*opt), val);
+		str = ft_files(val);
+		if (!str)
+			str = ft_strdup("\0");
+		g_functions[hash_choice](str, (*opt), val);
 		free(str);
-		close(fd);
+
 	}
 	return (EXIT_SUCCESS);
 }
@@ -305,30 +334,28 @@ void		free_hash_names(char **hash_names)
 int			main(int argc, char **argv)
 {
 	int		i;
-	int		nb_hash;
+	int		hash_choice;
 	char	opt;
 	char	**hash_names;
 
-	nb_hash = 0;
+	hash_choice = 0;
 	hash_names = NULL;
 	opt = 0;
 	i = 2;
 	if (argc < 2)
 		return (print_usage(argv[0]));
 	hash_names = ft_strsplit(HASH, '|');
-	while (hash_names[nb_hash])
+	while (hash_names[hash_choice])
 	{
-		if (ft_strcmp(argv[1], hash_names[nb_hash]) == 0)
+		if (ft_strcmp(argv[1], hash_names[hash_choice]) == 0)
 		{
 			opt = opt | OPT_GH;
 			break ;
 		}
-		nb_hash++;
+		hash_choice++;
 	}
 	if (!(opt & OPT_GH))
-	{
 		return (print_usage(argv[0]));
-	}
 	while (i < argc && argv[i][0] == '-')
 	{
 		if (argv[i][1] == '\0')
@@ -374,7 +401,7 @@ int			main(int argc, char **argv)
 	}
 	*/
 	// CREATE FUNCTION INIT HASH CHOOSE GOOD FUNCTION AND PUT ALL NEXT IN NEW FUNCTION MD5 INIT
-	// ft_init_hash(hash_names[nb_hash]);
+	// ft_init_hash(hash_names[hash_choice]);
 	free_hash_names(hash_names);
 	int ret;
 	char buf[BUFF_SIZE + 1];
@@ -397,13 +424,13 @@ int			main(int argc, char **argv)
 			else
 				str = ft_strjoin(str, buf);
 		}
-		ft_md5_string(str, opt, str);
+		g_functions[hash_choice](str, opt, str);
 		opt = opt & ~OPT_STDIN;
 	}
 	i--;
 	while (i++ < argc - 1)
 	{
-		ft_md5(argv[i], &opt);
+		ft_algo_choice(argv[i], &opt, hash_choice);
 	}
 	return (0);
 }
