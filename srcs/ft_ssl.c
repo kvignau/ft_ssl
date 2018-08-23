@@ -79,6 +79,7 @@ void		ft_print_hash(t_hash *hash)
 	int		i;
 	int		j;
 	uint8_t *p;
+	char	*res;
 
 	i = 0;
 	while (i < 4)
@@ -87,11 +88,14 @@ void		ft_print_hash(t_hash *hash)
 		j = 0;
 		while (j < 4)
 		{
-			ft_printf("%02x", p[j]);
-			// IF LEAKS USE -> 
-			// if (ft_strlen(ft_itoa_base_uimax(p[j], 16)) == 1)
-			// 	ft_putchar('0');
-			// ft_putstr(ft_itoa_base_uimax(p[j], 16));
+			// ft_printf("%02x", p[j]);
+			// IF LEAKS USE ->
+			res = ft_itoa_base_uimax(p[j], 16);
+			if (ft_strlen(res) == 1)
+				ft_putchar('0');
+			ft_putstr(res);
+			free(res);
+			res = NULL;
 			j++;
 		}
 		i++;
@@ -218,6 +222,7 @@ void		ft_md5_string(char *val, char opt, char *name)
 	msg_len_bits = md5.message_len * 8;
 	ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
 	ft_hash_proc(md5, &hash, opt);
+	free(md5.data);
 }
 
 int			ft_open_file(int *fd, char *val)
@@ -243,16 +248,12 @@ int		ft_files(char *val, char **str)
 	while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
 	{
 		if (ret < 0)
-		{
-			if ((*str))
-				free((*str));
 			return (print_errors("Read error"));
-		}
 		buf[ret] = '\0';
 		if (!(*str))
 			(*str) = ft_strdup(buf);
 		else
-			(*str) = ft_strjoin((*str), buf);
+			(*str) = ft_strjoinandfree((*str), buf, 1);
 	}
 	close(fd);
 	return (EXIT_SUCCESS);
@@ -279,7 +280,11 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 	else
 	{
 		if (ft_files(val, &str) == EXIT_FAILURE)
+		{
+			if (str)
+				free(str);
 			return (EXIT_FAILURE);
+		}
 		if (!str)
 			str = ft_strdup("\0");
 		g_functions[hash_choice](str, (*opt), val);
@@ -360,9 +365,7 @@ int			ft_stdin(int i, int argc, char *opt, int hash_choice)
 		while ((ret = read(0, buf, BUFF_SIZE)) > 0)
 		{
 			if (ret < 0)
-			{
 				return (print_errors("Read error"));
-			}
 			buf[ret] = '\0';
 			if (!str)
 				str = ft_strdup(buf);
@@ -371,6 +374,8 @@ int			ft_stdin(int i, int argc, char *opt, int hash_choice)
 		}
 		g_functions[hash_choice](str, (*opt), str);
 		(*opt) = (*opt) & ~OPT_STDIN;
+		if (str)
+			free(str);
 	}
 	return (EXIT_SUCCESS);
 }
