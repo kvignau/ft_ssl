@@ -232,33 +232,30 @@ int			ft_open_file(int *fd, char *val)
 	return (EXIT_SUCCESS);
 }
 
-char		*ft_files(char *val)
+int		ft_files(char *val, char **str)
 {
 	int		fd;
 	int		ret;
 	char	buf[BUFF_SIZE + 1];
-	char	*str;
 
-	str = NULL;
 	if (ft_open_file(&fd, val) == EXIT_FAILURE)
-		return (NULL);
+		return (EXIT_FAILURE);
 	while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
 	{
 		if (ret < 0)
 		{
-			if (str)
-				free(str);
-			print_errors("Read error");
-			return (NULL);
+			if ((*str))
+				free((*str));
+			return (print_errors("Read error"));
 		}
 		buf[ret] = '\0';
-		if (!str)
-			str = ft_strdup(buf);
+		if (!(*str))
+			(*str) = ft_strdup(buf);
 		else
-			str = ft_strjoin(str, buf);
+			(*str) = ft_strjoin((*str), buf);
 	}
 	close(fd);
-	return (str);
+	return (EXIT_SUCCESS);
 }
 
 void		ft_sha256_string(char *val, char opt, char *name)
@@ -281,7 +278,8 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 	}
 	else
 	{
-		str = ft_files(val);
+		if (ft_files(val, &str) == EXIT_FAILURE)
+			return (EXIT_FAILURE);
 		if (!str)
 			str = ft_strdup("\0");
 		g_functions[hash_choice](str, (*opt), val);

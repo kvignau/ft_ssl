@@ -98,6 +98,7 @@ void		free_hash_names(char **hash_names);
 void		ft_sha256_string(char *val, char opt, char *name);
 int			ft_stdin(int i, int argc, char *opt, int hash_choice);
 int			ft_hash_name(int *hash_choice, char *opt, char *algo);
+int			ft_files(char *val, char **str);
 
 t_funct			g_functions[] = {ft_md5_string, ft_sha256_string};
 
