@@ -21,6 +21,8 @@ CC = gcc
 FLAGS = -Wall -Wextra -Werror
 
 C_FILES = ft_ssl.c
+C_FILES += ft_sha256.c
+C_FILES += ft_md5.c
 
 O_FILES = $(addprefix $(O_DIR),$(C_FILES:.c=.o))
 
