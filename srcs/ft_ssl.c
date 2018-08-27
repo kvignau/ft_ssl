@@ -58,7 +58,7 @@ int		print_usage(char *str)
 	return (EXIT_FAILURE);
 }
 
-void	ft_init_hash_md5(t_hash *hash, char *name)
+void	ft_init_hash_md5(t_hash *hash, char *name, int hash_choice)
 {
 	(*hash).file_name = name;
 	(*hash).h[0] = 0x67452301;
@@ -72,9 +72,10 @@ void	ft_init_hash_md5(t_hash *hash, char *name)
 	(*hash).h_mod[1] = 0;
 	(*hash).h_mod[2] = 0;
 	(*hash).h_mod[3] = 0;
+	(*hash).hash_choice = hash_choice;
 }
 
-void	ft_init_hash_sha256(t_hash *hash, char *name)
+void	ft_init_hash_sha256(t_hash *hash, char *name, int hash_choice)
 {
 	(*hash).file_name = name;
 	(*hash).h[0] = 0x6a09e667;
@@ -98,9 +99,10 @@ void	ft_init_hash_sha256(t_hash *hash, char *name)
 	(*hash).h_mod[7] = 0;
 	(*hash).h_mod[8] = 0;
 	(*hash).h_mod[9] = 0;
+	(*hash).hash_choice = hash_choice;
 }
 
-void		ft_print_hash(t_hash *hash)
+void		ft_print_hash_md5(t_hash *hash)
 {
 	int		i;
 	int		j;
@@ -128,21 +130,34 @@ void		ft_print_hash(t_hash *hash)
 	}
 }
 
-void		print_md5(t_hash *hash, char opt)
+char		**algo_name()
 {
+	char	**hash_names;
+
+	hash_names = NULL;
+	hash_names = ft_strsplit(HASH, '|');
+	return (hash_names);
+}
+
+void		print(t_hash *hash, char opt)
+{
+	char	**algo;
+
 	if ((opt & OPT_P) && (opt & OPT_STDIN))
 			ft_printf("%s", hash->file_name);
 	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
 	{
 		if (!(opt & OPT_Q))
 		{
+			algo = algo_name();
 			if (opt & OPT_S)
-				ft_printf("MD5 (\"%s\") = ", hash->file_name);
+				ft_printf("%s (\"%s\") = ", algo[hash->hash_choice], hash->file_name);
 			else
-				ft_printf("MD5 (%s) = ", hash->file_name);
+				ft_printf("%s (%s) = ", algo[hash->hash_choice], hash->file_name);
+			free_hash_names(algo);
 		}
 	}
-	ft_print_hash(hash);
+	g_print_funct[hash->hash_choice](hash);
 	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
 	{
 		if (opt & OPT_S)
@@ -157,17 +172,25 @@ void		ft_fill_hash(t_hash *hash, int choice)
 {
 	if (choice == 0)
 	{
-		hash->h_mod[0] = hash->h[0];
-		hash->h_mod[1] = hash->h[1];
-		hash->h_mod[2] = hash->h[2];
-		hash->h_mod[3] = hash->h[3];
+		(*hash).h_mod[0] = (*hash).h[0];
+		(*hash).h_mod[1] = (*hash).h[1];
+		(*hash).h_mod[2] = (*hash).h[2];
+		(*hash).h_mod[3] = (*hash).h[3];
+		(*hash).h_mod[4] = (*hash).h[4];
+		(*hash).h_mod[5] = (*hash).h[5];
+		(*hash).h_mod[6] = (*hash).h[6];
+		(*hash).h_mod[7] = (*hash).h[7];
 	}
 	else
 	{
-		hash->h[0] += hash->h_mod[0];
-		hash->h[1] += hash->h_mod[1];
-		hash->h[2] += hash->h_mod[2];
-		hash->h[3] += hash->h_mod[3];
+		(*hash).h[0] += (*hash).h_mod[0];
+		(*hash).h[1] += (*hash).h_mod[1];
+		(*hash).h[2] += (*hash).h_mod[2];
+		(*hash).h[3] += (*hash).h_mod[3];
+		(*hash).h[4] += (*hash).h_mod[4];
+		(*hash).h[5] += (*hash).h_mod[5];
+		(*hash).h[6] += (*hash).h_mod[6];
+		(*hash).h[7] += (*hash).h_mod[7];
 	}
 }
 
@@ -182,30 +205,25 @@ void		ft_rotate_md5(t_hash *hash, int i)
 	hash->h_mod[0] = tmp;
 }
 
-void		function_md5(t_hash *hash, int i)
+void		function_md5(t_hash *hash)
 {
+	int		i;
+
+	i = -1;
 	while (++i < 64)
 	{
 		if (i < 16)
-		{
-			hash->funct = F(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
-			hash->g = i;
-		}
+			(hash->funct = F(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3])) ?
+				(hash->g = i) : 0;
 		else if (i < 32)
-		{
-			hash->funct = G(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
-			hash->g = (5 * i + 1) % 16;
-		}
+			(hash->funct = G(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3])) ?
+				(hash->g = (5 * i + 1) % 16) : 0;
 		else if (i < 48)
-		{
-			hash->funct = H(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
-			hash->g = (3 * i + 5) % 16;
-		}
+			(hash->funct = H(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3])) ?
+				(hash->g = (3 * i + 5) % 16) : 0;
 		else
-		{
-			hash->funct = I(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3]);
-			hash->g = (7 * i) % 16;
-		}
+			(hash->funct = I(hash->h_mod[1], hash->h_mod[2], hash->h_mod[3])) ?
+				(hash->g = (7 * i) % 16) : 0;
 		ft_rotate_md5(hash, i);
 	}
 }
@@ -213,19 +231,17 @@ void		function_md5(t_hash *hash, int i)
 void		ft_hash_proc(t_md5 md5, t_hash *hash, char opt)
 {
 	size_t		offset;
-	int		i;
 
 	offset = 0;
 	while (offset < md5.size_all)
 	{
 		hash->w = (uint32_t *)(md5.data + offset);
-		i = -1;
 		ft_fill_hash(hash, 0);
-		function_md5(hash, i);
+		function_md5(hash);
 		ft_fill_hash(hash, 1);
 		offset += 64;
 	}
-	print_md5(hash, opt);
+	print(hash, opt);
 }
 
 void		ft_init_message(t_md5 *md5, char *val)
@@ -239,13 +255,13 @@ void		ft_init_message(t_md5 *md5, char *val)
 	ft_memcpy(md5->data, val, md5->message_len);
 }
 
-void		ft_md5_string(char *val, char opt, char *name)
+void		ft_md5_string(char *val, char opt, char *name, int hash_choice)
 {
 	t_md5	md5;
 	size_t 	msg_len_bits;
 	t_hash	hash;
 
-	ft_init_hash_md5(&hash, name);
+	ft_init_hash_md5(&hash, name, hash_choice);
 	ft_init_message(&md5, val);
 
 	md5.data[md5.message_len] = (char)(1 << 7);
@@ -340,32 +356,6 @@ void			sha256_process(t_hash *hash)
 	}
 }
 
-void		ft_fill_hash_sha256(t_hash *hash, int choice)
-{
-	if (choice == 0)
-	{
-		(*hash).h_mod[0] = (*hash).h[0];
-		(*hash).h_mod[1] = (*hash).h[1];
-		(*hash).h_mod[2] = (*hash).h[2];
-		(*hash).h_mod[3] = (*hash).h[3];
-		(*hash).h_mod[4] = (*hash).h[4];
-		(*hash).h_mod[5] = (*hash).h[5];
-		(*hash).h_mod[6] = (*hash).h[6];
-		(*hash).h_mod[7] = (*hash).h[7];
-	}
-	else
-	{
-		(*hash).h[0] += (*hash).h_mod[0];
-		(*hash).h[1] += (*hash).h_mod[1];
-		(*hash).h[2] += (*hash).h_mod[2];
-		(*hash).h[3] += (*hash).h_mod[3];
-		(*hash).h[4] += (*hash).h_mod[4];
-		(*hash).h[5] += (*hash).h_mod[5];
-		(*hash).h[6] += (*hash).h_mod[6];
-		(*hash).h[7] += (*hash).h_mod[7];
-	}
-}
-
 void		ft_print_hash_sha256(t_hash *hash)
 {
 	int				i;
@@ -384,31 +374,6 @@ void		ft_print_hash_sha256(t_hash *hash)
 	}
 }
 
-void		print_sha256(t_hash *hash, char opt)
-{
-	if ((opt & OPT_P) && (opt & OPT_STDIN))
-			ft_printf("%s", hash->file_name);
-	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
-	{
-		if (!(opt & OPT_Q))
-		{
-			if (opt & OPT_S)
-				ft_printf("SHA256 (\"%s\") = ", hash->file_name);
-			else
-				ft_printf("SHA256 (%s) = ", hash->file_name);
-		}
-	}
-	ft_print_hash_sha256(hash);
-	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
-	{
-		if (opt & OPT_S)
-			ft_printf(" \"%s\"", hash->file_name);
-		else
-			ft_printf(" %s", hash->file_name);
-	}
-	ft_putchar('\n');
-}
-
 void		hash_proc_sha256(t_md5 sha256, t_hash *hash, char opt)
 {
 	size_t		offset;
@@ -419,24 +384,23 @@ void		hash_proc_sha256(t_md5 sha256, t_hash *hash, char opt)
 	{
 		(*hash).w = get_tab((sha256.data + offset));
 		i = -1;
-		ft_fill_hash_sha256(hash, 0);
+		ft_fill_hash(hash, 0);
 		sha256_process(hash);
-		ft_fill_hash_sha256(hash, 1);
+		ft_fill_hash(hash, 1);
 		offset += 64;
 		free((*hash).w);
 	}
-	print_sha256(hash, opt);
+	print(hash, opt);
 }
 
-void		ft_sha256_string(char *val, char opt, char *name)
+void		ft_sha256_string(char *val, char opt, char *name, int hash_choice)
 {
 	t_md5	sha256;
 	size_t 	msg_len_bits;
 	t_hash	hash;
 
-	ft_init_hash_sha256(&hash, name);
+	ft_init_hash_sha256(&hash, name, hash_choice);
 	ft_init_message(&sha256, val);
-
 	sha256.data[sha256.message_len] = (char)(1 << 7);
 	ft_memset(sha256.data + sha256.message_len + 1, 0, sha256.size_all - (sha256.message_len + 1));
 	msg_len_bits = sha256.message_len * 8;
@@ -453,7 +417,7 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 	str = NULL;
 	if ((*opt) & OPT_S)
 	{
-		g_functions[hash_choice](val, (*opt), val);
+		g_functions[hash_choice](val, (*opt), val, hash_choice);
 		(*opt) = (*opt) & ~OPT_S;
 	}
 	else
@@ -466,7 +430,7 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 		}
 		if (!str)
 			str = ft_strdup("\0");
-		g_functions[hash_choice](str, (*opt), val);
+		g_functions[hash_choice](str, (*opt), val, hash_choice);
 		free(str);
 	}
 	return (EXIT_SUCCESS);
@@ -551,7 +515,7 @@ int			ft_stdin(int i, int argc, char *opt, int hash_choice)
 			else
 				str = ft_strjoin(str, buf);
 		}
-		g_functions[hash_choice](str, (*opt), str);
+		g_functions[hash_choice](str, (*opt), str, hash_choice);
 		(*opt) = (*opt) & ~OPT_STDIN;
 		if (str)
 			free(str);
@@ -565,6 +529,7 @@ int			ft_hash_name(int *hash_choice, char *opt, char *algo)
 
 	hash_names = NULL;
 	hash_names = ft_strsplit(HASH, '|');
+	algo = ft_strupper(algo);
 	while (hash_names[(*hash_choice)])
 	{
 		if (ft_strcmp(algo, hash_names[(*hash_choice)]) == 0)

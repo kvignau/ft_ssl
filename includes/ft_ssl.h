@@ -19,7 +19,7 @@
 
 # define BUFF_SIZE 1024
 
-# define HASH "md5|sha256"
+# define HASH "MD5|SHA256"
 
 # define OPT_P (1 << 0)
 # define OPT_Q (OPT_P << 1)
@@ -101,9 +101,11 @@ typedef struct		s_hash
 	size_t			g;
 	int				funct;
 	unsigned int	*w;
+	int				hash_choice;
 }					t_hash;
 
-typedef void	(*t_funct)(char *val, char opt, char *name);
+typedef void	(*t_funct)(char *val, char opt, char *name, int hash_choice);
+typedef void	(*t_algo_print)(t_hash *hash);
 
 // TO DEL
 void		my_print_bits(char opt);
@@ -111,20 +113,24 @@ void    	print_bits(unsigned char octet);
 
 int			print_usage(char *str);
 int			print_errors(char *str);
-void		ft_init_hash(t_hash *hash, char *name);
-void		print_md5(t_hash *hash, char opt);
+void		ft_init_hash_md5(t_hash *hash, char *name, int hash_choice);
+void		print(t_hash *hash, char opt);
 void		ft_fill_hash(t_hash *hash, int choice);
 void		ft_rotate_md5(t_hash *hash, int i);
-void		function_md5(t_hash *hash, int i);
+void		function_md5(t_hash *hash);
 void		ft_hash_proc(t_md5 md5, t_hash *hash, char opt);
-void		ft_md5_string(char *val, char opt, char *name);
+void		ft_md5_string(char *val, char opt, char *name, int hash_choice);
 int			ft_algo_choice(char *val, char *opt, int hash_choice);
 void		free_hash_names(char **hash_names);
-void		ft_sha256_string(char *val, char opt, char *name);
+void		ft_sha256_string(char *val, char opt, char *name, int hash_choice);
 int			ft_stdin(int i, int argc, char *opt, int hash_choice);
 int			ft_hash_name(int *hash_choice, char *opt, char *algo);
 int			ft_files(char *val, char **str);
 
+void		ft_print_hash_md5(t_hash *hash);
+void		ft_print_hash_sha256(t_hash *hash);
+
 t_funct			g_functions[] = {ft_md5_string, ft_sha256_string};
+t_algo_print	g_print_funct[] = {ft_print_hash_md5, ft_print_hash_sha256};
 
 #endif
