@@ -53,14 +53,16 @@ static unsigned int		*get_tab(unsigned char *offset)
 
 static void				sha256_process(t_hash *hash)
 {
-	int			i;
+	int					i;
 
 	i = -1;
 	while (++i < 64)
 	{
 		(*hash).h_mod[8] = (*hash).h_mod[7] + B((*hash).h_mod[4]) +
-			CH((*hash).h_mod[4], (*hash).h_mod[5], (*hash).h_mod[6]) + g_k_sh256[i] + (*hash).w[i];
-		(*hash).h_mod[9] = A((*hash).h_mod[0]) + MAJ((*hash).h_mod[0], (*hash).h_mod[1], (*hash).h_mod[2]);
+			CH((*hash).h_mod[4], (*hash).h_mod[5], (*hash).h_mod[6])
+			+ g_k_sh256[i] + (*hash).w[i];
+		(*hash).h_mod[9] = A((*hash).h_mod[0]) + MAJ((*hash).h_mod[0],
+			(*hash).h_mod[1], (*hash).h_mod[2]);
 		(*hash).h_mod[7] = (*hash).h_mod[6];
 		(*hash).h_mod[6] = (*hash).h_mod[5];
 		(*hash).h_mod[5] = (*hash).h_mod[4];
@@ -72,10 +74,10 @@ static void				sha256_process(t_hash *hash)
 	}
 }
 
-static void			hash_proc_sha256(t_algo sha256, t_hash *hash, char opt)
+static void				hash_proc_sha256(t_algo sha256, t_hash *hash, char opt)
 {
-	size_t		offset;
-	int			i;
+	size_t				offset;
+	int					i;
 
 	offset = 0;
 	while (offset < sha256.size_all - 8)
@@ -91,11 +93,11 @@ static void			hash_proc_sha256(t_algo sha256, t_hash *hash, char opt)
 	print_algo(hash, opt);
 }
 
-void				ft_print_hash_sha256(t_hash *hash)
+void					ft_print_hash_sha256(t_hash *hash)
 {
-	int				i;
-	int				y;
-	char			*res;
+	int					i;
+	int					y;
+	char				*res;
 
 	i = -1;
 	while (++i < 8)
@@ -109,16 +111,18 @@ void				ft_print_hash_sha256(t_hash *hash)
 	}
 }
 
-void				ft_sha256_string(char *val, char opt, char *name, int hash_choice)
+void					ft_sha256_string(char *val, char opt,
+	char *name, int hash_choice)
 {
-	t_algo	sha256;
-	size_t 	msg_len_bits;
-	t_hash	hash;
+	t_algo				sha256;
+	size_t				msg_len_bits;
+	t_hash				hash;
 
 	ft_init_hash_sha256(&hash, name, hash_choice);
 	ft_init_message(&sha256, val);
 	sha256.data[sha256.message_len] = (char)(1 << 7);
-	ft_memset(sha256.data + sha256.message_len + 1, 0, sha256.size_all - (sha256.message_len + 1));
+	ft_memset(sha256.data + sha256.message_len + 1, 0,
+		sha256.size_all - (sha256.message_len + 1));
 	msg_len_bits = sha256.message_len * 8;
 	msg_len_bits = swap_uint64(msg_len_bits);
 	ft_memcpy(sha256.data + sha256.size_all - 8, &msg_len_bits, 8);

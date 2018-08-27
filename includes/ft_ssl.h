@@ -69,32 +69,38 @@ typedef void	(*t_algo_print)(t_hash *hash);
 void		my_print_bits(char opt);
 void    	print_bits(unsigned char octet);
 
-int			print_usage(char *str);
-int			print_errors(char *str);
-void		ft_init_hash_md5(t_hash *hash, char *name, int hash_choice);
 void		print_algo(t_hash *hash, char opt);
-void		ft_fill_hash(t_hash *hash, int choice);
 int			ft_algo_choice(char *val, char *opt, int hash_choice);
-void		free_hash_names(char **hash_names);
 int			ft_stdin(int i, int argc, char *opt, int hash_choice);
-int			ft_hash_name(int *hash_choice, char *opt, char *algo);
-int			ft_files(char *val, char **str);
-
-void		ft_print_hash_md5(t_hash *hash);
 
 // MD5
 void				function_md5(t_hash *hash);
 void				ft_hash_proc(t_algo md5, t_hash *hash, char opt);
 void				ft_md5_string(char *val, char opt, char *name, int hash_choice);
 void				ft_rotate_md5(t_hash *hash, int i);
+void				ft_print_hash_md5(t_hash *hash);
 
 // SHA256
 void				ft_print_hash_sha256(t_hash *hash);
 void				ft_sha256_string(char *val, char opt, char *name, int hash_choice);
-void				ft_init_hash_sha256(t_hash *hash, char *name, int hash_choice);
 
-// COMMON
+// UTILS
 uint64_t			swap_uint64(uint64_t val);
+int					ft_open_file(int *fd, char *val);
+int					ft_files(char *val, char **str);
+int					print_usage(char *str);
+int					print_errors(char *str);
+
+// HASH ACTIONS
+void				ft_init_hash_md5(t_hash *hash, char *name, int hash_choice);
+void				ft_init_hash_sha256(t_hash *hash, char *name, int hash_choice);
+void				ft_fill_hash(t_hash *hash, int choice);
 void				ft_init_message(t_algo *md5, char *val);
+
+// OPTIONS
+int					ft_check_options(char *arg, char *opt);
+void				free_hash_names(char **hash_names);
+int					ft_options(int *i, char *opt, int argc, char **argv);
+int					ft_hash_name(int *hash_choice, char *opt, char *algo);
 
 #endif

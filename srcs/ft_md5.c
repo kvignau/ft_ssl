@@ -35,6 +35,32 @@ int32_t g_k_md5[64] = {
 	0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
 	0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391};
 
+void		ft_print_hash_md5(t_hash *hash)
+{
+	int		i;
+	int		j;
+	uint8_t *p;
+	char	*res;
+
+	i = 0;
+	while (i < 4)
+	{
+		p = (uint8_t *)&hash->h[i];
+		j = 0;
+		while (j < 4)
+		{
+			res = ft_itoa_base_uimax(p[j], 16);
+			if (ft_strlen(res) == 1)
+				ft_putchar('0');
+			ft_putstr(res);
+			free(res);
+			res = NULL;
+			j++;
+		}
+		i++;
+	}
+}
+
 void		ft_rotate_md5(t_hash *hash, int i)
 {
 	int		tmp;
@@ -42,7 +68,8 @@ void		ft_rotate_md5(t_hash *hash, int i)
 	tmp = hash->h_mod[3];
 	hash->h_mod[3] = hash->h_mod[2];
 	hash->h_mod[2] = hash->h_mod[1];
-	hash->h_mod[1] = hash->h_mod[1] + LEFTROTATE((hash->h_mod[0] + hash->funct + g_k_md5[i] + hash->w[hash->g]), g_r[i]);
+	hash->h_mod[1] = hash->h_mod[1] + LEFTROTATE((hash->h_mod[0]
+		+ hash->funct + g_k_md5[i] + hash->w[hash->g]), g_r[i]);
 	hash->h_mod[0] = tmp;
 }
 
@@ -71,7 +98,7 @@ void		function_md5(t_hash *hash)
 
 void		ft_hash_proc(t_algo md5, t_hash *hash, char opt)
 {
-	size_t		offset;
+	size_t	offset;
 
 	offset = 0;
 	while (offset < md5.size_all)
@@ -88,14 +115,14 @@ void		ft_hash_proc(t_algo md5, t_hash *hash, char opt)
 void		ft_md5_string(char *val, char opt, char *name, int hash_choice)
 {
 	t_algo	md5;
-	size_t 	msg_len_bits;
+	size_t	msg_len_bits;
 	t_hash	hash;
 
 	ft_init_hash_md5(&hash, name, hash_choice);
 	ft_init_message(&md5, val);
-
 	md5.data[md5.message_len] = (char)(1 << 7);
-	ft_memset(md5.data + md5.message_len + 1, 0, md5.size_all - (md5.message_len + 1));
+	ft_memset(md5.data + md5.message_len
+		+ 1, 0, md5.size_all - (md5.message_len + 1));
 	msg_len_bits = md5.message_len * 8;
 	ft_memcpy(md5.data + md5.size_all - 8, &msg_len_bits, 4);
 	ft_hash_proc(md5, &hash, opt);
