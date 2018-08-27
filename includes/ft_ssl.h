@@ -88,7 +88,7 @@ int32_t g_k_sh256[64] = {
 
 typedef struct		s_md5
 {
-	char			*data;
+	unsigned char	*data;
 	size_t			size_all;
 	size_t			message_len;
 }					t_md5;
@@ -96,13 +96,11 @@ typedef struct		s_md5
 typedef struct		s_hash
 {
 	char			*file_name;
-	int				h[8];
-	int				h_mod[10];
+	unsigned int	h[8];
+	unsigned int	h_mod[10];
 	size_t			g;
 	int				funct;
-	uint32_t		*w;
-	// int				lo;
-	// int				hi;
+	unsigned int	*w;
 }					t_hash;
 
 typedef void	(*t_funct)(char *val, char opt, char *name);

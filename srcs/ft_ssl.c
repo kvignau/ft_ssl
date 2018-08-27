@@ -235,7 +235,7 @@ void		ft_init_message(t_md5 *md5, char *val)
 	while (md5->size_all % 64 != 56)
 		md5->size_all++;
 	md5->size_all += 8;
-	md5->data = (char *)malloc(sizeof(char) * md5->size_all);
+	md5->data = (unsigned char *)malloc(sizeof(unsigned char) * md5->size_all);
 	ft_memcpy(md5->data, val, md5->message_len);
 }
 
@@ -319,24 +319,24 @@ unsigned int	*get_tab(unsigned char *offset)
 	return (w);
 }
 
-void			sha256_process(t_hash *hash, int i)
+void			sha256_process(t_hash *hash)
 {
-	int			j;
+	int			i;
 
-	j = -1;
-	while (++j < 64)
+	i = -1;
+	while (++i < 64)
 	{
-		hash->h_mod[8] = hash->h_mod[7] + B(hash->h_mod[4]) +
-			CH(hash->h_mod[4], hash->h_mod[5], hash->h_mod[6]) + g_m[i] + w[i];
-		hash->h_mod[9] = A(hash->h_mod[0]) + MAJ(hash->h_mod[0], hash->h_mod[1], hash->h_mod[2]);
-		hash->h_mod[7] = hash->h_mod[6];
-		hash->h_mod[6] = hash->h_mod[5];
-		hash->h_mod[5] = hash->h_mod[4];
-		hash->h_mod[4] = hash->h_mod[3] + hash->h_mod[8];
-		hash->h_mod[3] = hash->h_mod[2];
-		hash->h_mod[2] = hash->h_mod[1];
-		hash->h_mod[1] = hash->h_mod[0];
-		hash->h_mod[0] = hash->h_mod[8] + hash->h_mod[9];
+		(*hash).h_mod[8] = (*hash).h_mod[7] + B((*hash).h_mod[4]) +
+			CH((*hash).h_mod[4], (*hash).h_mod[5], (*hash).h_mod[6]) + g_k_sh256[i] + (*hash).w[i];
+		(*hash).h_mod[9] = A((*hash).h_mod[0]) + MAJ((*hash).h_mod[0], (*hash).h_mod[1], (*hash).h_mod[2]);
+		(*hash).h_mod[7] = (*hash).h_mod[6];
+		(*hash).h_mod[6] = (*hash).h_mod[5];
+		(*hash).h_mod[5] = (*hash).h_mod[4];
+		(*hash).h_mod[4] = (*hash).h_mod[3] + (*hash).h_mod[8];
+		(*hash).h_mod[3] = (*hash).h_mod[2];
+		(*hash).h_mod[2] = (*hash).h_mod[1];
+		(*hash).h_mod[1] = (*hash).h_mod[0];
+		(*hash).h_mod[0] = (*hash).h_mod[8] + (*hash).h_mod[9];
 	}
 }
 
@@ -366,22 +366,66 @@ void		ft_fill_hash_sha256(t_hash *hash, int choice)
 	}
 }
 
+void		ft_print_hash_sha256(t_hash *hash)
+{
+	int				i;
+	int				y;
+	char			*res;
+
+	i = -1;
+	while (++i < 8)
+	{
+		res = ft_itoa_base_uimax(hash->h[i], 16);
+		y = ft_strlen(res);
+		while (y++ < 8)
+			ft_putchar('0');
+		ft_putstr(res);
+		free(res);
+	}
+}
+
+void		print_sha256(t_hash *hash, char opt)
+{
+	if ((opt & OPT_P) && (opt & OPT_STDIN))
+			ft_printf("%s", hash->file_name);
+	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
+	{
+		if (!(opt & OPT_Q))
+		{
+			if (opt & OPT_S)
+				ft_printf("SHA256 (\"%s\") = ", hash->file_name);
+			else
+				ft_printf("SHA256 (%s) = ", hash->file_name);
+		}
+	}
+	ft_print_hash_sha256(hash);
+	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
+	{
+		if (opt & OPT_S)
+			ft_printf(" \"%s\"", hash->file_name);
+		else
+			ft_printf(" %s", hash->file_name);
+	}
+	ft_putchar('\n');
+}
+
 void		hash_proc_sha256(t_md5 sha256, t_hash *hash, char opt)
 {
 	size_t		offset;
-	int		i;
+	int			i;
 
 	offset = 0;
-	while (offset < md5.size_all)
+	while (offset < sha256.size_all - 8)
 	{
-		hash->w = get_tab((mem->data + offset));
+		(*hash).w = get_tab((sha256.data + offset));
 		i = -1;
 		ft_fill_hash_sha256(hash, 0);
-		sha256_process(hash, i);
+		sha256_process(hash);
 		ft_fill_hash_sha256(hash, 1);
 		offset += 64;
+		free((*hash).w);
 	}
-	// print_sha256(hash, opt);
+	print_sha256(hash, opt);
 }
 
 void		ft_sha256_string(char *val, char opt, char *name)
@@ -398,7 +442,7 @@ void		ft_sha256_string(char *val, char opt, char *name)
 	msg_len_bits = sha256.message_len * 8;
 	msg_len_bits = swap_uint64(msg_len_bits);
 	ft_memcpy(sha256.data + sha256.size_all - 8, &msg_len_bits, 8);
-	ft_hash_proc_sha256(sha256, &hash, opt);
+	hash_proc_sha256(sha256, &hash, opt);
 	free(sha256.data);
 }
 
