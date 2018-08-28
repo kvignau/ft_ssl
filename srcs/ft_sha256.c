@@ -51,7 +51,7 @@ static unsigned int		*get_tab(unsigned char *offset)
 	return (w);
 }
 
-static void				sha256_process(t_hash *hash)
+static void				function_sha256(t_hash *hash)
 {
 	int					i;
 
@@ -85,7 +85,7 @@ static void				hash_proc_sha256(t_algo sha256, t_hash *hash, char opt)
 		(*hash).w = get_tab((sha256.data + offset));
 		i = -1;
 		ft_fill_hash(hash, 0);
-		sha256_process(hash);
+		function_sha256(hash);
 		ft_fill_hash(hash, 1);
 		offset += 64;
 		free((*hash).w);

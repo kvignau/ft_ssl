@@ -57,9 +57,9 @@ int			ft_files(char *val, char **str)
 
 int			print_usage(char *str)
 {
-	ft_putstr_fd("usage: ", 2);
-	ft_putstr_fd(str, 2);
-	ft_putstr_fd(" [hash] [command options] [command arguments]\n", 2);
+	print_errors("usage: ");
+	print_errors(str);
+	print_errors(" [hash] [command options] [command arguments]\n");
 	return (EXIT_FAILURE);
 }
 

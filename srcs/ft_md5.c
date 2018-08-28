@@ -61,7 +61,7 @@ void		ft_print_hash_md5(t_hash *hash)
 	}
 }
 
-void		ft_rotate_md5(t_hash *hash, int i)
+static void	ft_rotate_md5(t_hash *hash, int i)
 {
 	int		tmp;
 
@@ -73,7 +73,7 @@ void		ft_rotate_md5(t_hash *hash, int i)
 	hash->h_mod[0] = tmp;
 }
 
-void		function_md5(t_hash *hash)
+static void	function_md5(t_hash *hash)
 {
 	int		i;
 
@@ -96,7 +96,7 @@ void		function_md5(t_hash *hash)
 	}
 }
 
-void		ft_hash_proc(t_algo md5, t_hash *hash, char opt)
+static void	ft_hash_proc(t_algo md5, t_hash *hash, char opt)
 {
 	size_t	offset;
 

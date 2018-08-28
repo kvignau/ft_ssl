@@ -15,7 +15,7 @@
 t_funct			g_functions[] = {ft_md5_string, ft_sha256_string};
 t_algo_print	g_print_funct[] = {ft_print_hash_md5, ft_print_hash_sha256};
 
-char		**algo_name(void)
+static char	**algo_name(void)
 {
 	char	**hash_names;
 
@@ -100,10 +100,10 @@ int			ft_stdin(int i, int argc, char *opt, int hash_choice)
 			else
 				str = ft_strjoin(str, buf);
 		}
+		!str ? str = ft_strdup("\0") : NULL;
 		g_functions[hash_choice](str, (*opt), str, hash_choice);
 		(*opt) = (*opt) & ~OPT_STDIN;
-		if (str)
-			free(str);
+		str ? free(str) : NULL;
 	}
 	return (EXIT_SUCCESS);
 }
