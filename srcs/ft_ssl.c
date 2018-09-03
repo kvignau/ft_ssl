@@ -15,7 +15,7 @@
 t_funct			g_functions[] = {ft_md5_string, ft_sha256_string};
 t_algo_print	g_print_funct[] = {ft_print_hash_md5, ft_print_hash_sha256};
 
-static char	**algo_name(void)
+char		**algo_name(void)
 {
 	char	**hash_names;
 

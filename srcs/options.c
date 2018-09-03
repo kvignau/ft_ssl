@@ -91,5 +91,7 @@ int			ft_hash_name(int *hash_choice, char *opt, char *algo)
 		free_hash_names(hash_names);
 	print_errors("HASH: ");
 	print_errors(algo);
-	return (print_errors(" does not exist\n"));
+	print_errors(" does not exist\nAvailable hash [");
+	print_errors(HASH);
+	return (print_errors("]\n"));
 }

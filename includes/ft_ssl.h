@@ -67,6 +67,7 @@ typedef void		(*t_algo_print)(t_hash *hash);
 void				print_algo(t_hash *hash, char opt);
 int					ft_algo_choice(char *val, char *opt, int hash_choice);
 int					ft_stdin(int i, int argc, char *opt, int hash_choice);
+char				**algo_name(void);
 
 void				ft_md5_string(char *val, char opt, char *name,
 	int hash_choice);
