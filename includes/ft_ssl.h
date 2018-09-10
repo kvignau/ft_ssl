@@ -27,6 +27,11 @@
 # define OPT_S (OPT_R << 1)
 # define OPT_STDIN (OPT_S << 1)
 # define OPT_GH (OPT_STDIN << 1)
+# define OPT_D (OPT_GH << 1)
+# define OPT_E (OPT_D << 1)
+# define OPT_I (OPT_E << 1)
+# define OPT_O (OPT_I << 1)
+# define OPT_DES (OPT_O << 1)
 
 # define F(b, c, d) ((b & c) | (~b & d))
 # define G(b, c, d) ((b & d) | (c & ~d))
@@ -63,24 +68,32 @@ typedef struct		s_hash
 typedef struct		s_opts
 {
 	int				opt;
+	int				fd;
+	char			*output;
+	char			*input;
+	char			*pass;
+	char			*key;
+	char			*salt;
+	char			*vector;
 	int				len;
 }					t_opts;
 
-typedef void		(*t_funct)(char *val, t_opts opt, char *name,
+typedef int			(*t_funct)(char *val, t_opts opt, char *name,
 	int hash_choice);
 typedef void		(*t_algo_print)(t_hash *hash);
+typedef int			(*t_options_func)(int *i, t_opts *opt, int argc, char **argv);
 
 void				print_algo(t_hash *hash, t_opts opt);
 int					ft_algo_choice(char *val, t_opts *opt, int hash_choice);
 int					ft_stdin(int i, int argc, t_opts *opt, int hash_choice);
 char				**algo_name(void);
 
-void				ft_md5_string(char *val, t_opts opt, char *name,
+int					ft_md5_string(char *val, t_opts opt, char *name,
 	int hash_choice);
 void				ft_print_hash_md5(t_hash *hash);
 
 void				ft_print_hash_sha256(t_hash *hash);
-void				ft_sha256_string(char *val, t_opts opt, char *name,
+int					ft_sha256_string(char *val, t_opts opt, char *name,
 	int hash_choice);
 
 uint64_t			swap_uint64(uint64_t val);
@@ -100,5 +113,23 @@ int					ft_check_options(char *arg, t_opts *opt);
 void				free_hash_names(char **hash_names);
 int					ft_options(int *i, t_opts *opt, int argc, char **argv);
 int					ft_hash_name(int *hash_choice, t_opts *opt, char *algo);
+
+int					ft_options_des(int *i, t_opts *opt, int argc, char **argv);
+int					ft_base64_string(char *val, t_opts opt, char *name,
+	int hash_choice);
+void				ft_print_base(int save, int size, t_opts opt);
+char				*ft_invalid_char(void);
+int					ft_get_letter(char c);
+char				*ft_cleanspace(char *str, char *tmp);
+
+void				ft_encode_last_two(char *str, int len, t_opts opt);
+void				ft_encode_last(char *str, int len, t_opts opt);
+int					ft_encode_base(char *str, t_opts opt);
+
+char				*ft_check_invalid_char(char *str, int len, char *tmp, int i);
+char				*check_base64(char *str, t_opts opt);
+void				ft_decode_mod4(char *str, int len, t_opts opt);
+void				ft_decode_reste(char *str, int len, int nb_equal, t_opts opt);
+int					ft_decode_base(char *str, t_opts opt);
 
 #endif

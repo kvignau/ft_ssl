@@ -42,11 +42,12 @@ int			ft_files(char *val, char **str, t_opts *opt)
 
 	tmp = NULL;
 	if (ft_open_file(&fd, val) == EXIT_FAILURE)
+	{
+		str ? free(*str) : 0;
 		return (EXIT_FAILURE);
+	}
 	while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
 	{
-		if (ret < 0)
-			return (print_errors("Read error"));
 		if (!(*str))
 			(*str) = ft_memdup(buf, ret);
 		else

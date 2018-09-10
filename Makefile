@@ -26,6 +26,9 @@ C_FILES += ft_md5.c
 C_FILES += utils.c
 C_FILES += options.c
 C_FILES += hash_fill.c
+C_FILES += ft_base64.c
+C_FILES += decode_base64.c
+C_FILES += encode_base64.c
 
 O_FILES = $(addprefix $(O_DIR),$(C_FILES:.c=.o))
 

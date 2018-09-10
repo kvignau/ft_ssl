@@ -12,7 +12,7 @@
 
 #include "../includes/ft_ssl.h"
 
-int32_t g_k_sh256[64] = {
+int32_t					g_k_sh256[64] = {
 	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 	0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
 	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -112,7 +112,7 @@ void					ft_print_hash_sha256(t_hash *hash)
 	}
 }
 
-void					ft_sha256_string(char *val, t_opts opt,
+int						ft_sha256_string(char *val, t_opts opt,
 	char *name, int hash_choice)
 {
 	t_algo				sha256;
@@ -129,4 +129,5 @@ void					ft_sha256_string(char *val, t_opts opt,
 	ft_memcpy(sha256.data + sha256.size_all - 8, &msg_len_bits, 8);
 	hash_proc_sha256(sha256, &hash, opt);
 	free(sha256.data);
+	return (EXIT_SUCCESS);
 }
