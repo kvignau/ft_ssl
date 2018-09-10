@@ -33,23 +33,29 @@ int			ft_open_file(int *fd, char *val)
 	return (EXIT_SUCCESS);
 }
 
-int			ft_files(char *val, char **str)
+int			ft_files(char *val, char **str, t_opts *opt)
 {
 	int		fd;
 	int		ret;
-	char	buf[BUFF_SIZE + 1];
+	char	buf[BUFF_SIZE];
+	char	*tmp;
 
+	tmp = NULL;
 	if (ft_open_file(&fd, val) == EXIT_FAILURE)
 		return (EXIT_FAILURE);
 	while ((ret = read(fd, buf, BUFF_SIZE)) > 0)
 	{
 		if (ret < 0)
 			return (print_errors("Read error"));
-		buf[ret] = '\0';
 		if (!(*str))
-			(*str) = ft_strdup(buf);
+			(*str) = ft_memdup(buf, ret);
 		else
-			(*str) = ft_strjoinandfree((*str), buf, 1);
+		{
+			tmp = (*str);
+			(*str) = ft_memjoin(tmp, buf, opt->len, ret);
+			free(tmp);
+		}
+		opt->len += ret;
 	}
 	close(fd);
 	return (EXIT_SUCCESS);

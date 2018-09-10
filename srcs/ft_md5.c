@@ -96,7 +96,7 @@ static void	function_md5(t_hash *hash)
 	}
 }
 
-static void	ft_hash_proc(t_algo md5, t_hash *hash, char opt)
+static void	ft_hash_proc(t_algo md5, t_hash *hash, t_opts opt)
 {
 	size_t	offset;
 
@@ -112,14 +112,14 @@ static void	ft_hash_proc(t_algo md5, t_hash *hash, char opt)
 	print_algo(hash, opt);
 }
 
-void		ft_md5_string(char *val, char opt, char *name, int hash_choice)
+void		ft_md5_string(char *val, t_opts opt, char *name, int hash_choice)
 {
 	t_algo	md5;
 	size_t	msg_len_bits;
 	t_hash	hash;
 
 	ft_init_hash_md5(&hash, name, hash_choice);
-	ft_init_message(&md5, val);
+	ft_init_message(&md5, val, opt);
 	md5.data[md5.message_len] = (char)(1 << 7);
 	ft_memset(md5.data + md5.message_len
 		+ 1, 0, md5.size_all - (md5.message_len + 1));

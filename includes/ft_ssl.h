@@ -19,7 +19,7 @@
 
 # define BUFF_SIZE 1024
 
-# define HASH "MD5|SHA256"
+# define HASH "MD5|SHA256|BASE64"
 
 # define OPT_P (1 << 0)
 # define OPT_Q (OPT_P << 1)
@@ -60,26 +60,32 @@ typedef struct		s_hash
 	int				hash_choice;
 }					t_hash;
 
-typedef void		(*t_funct)(char *val, char opt, char *name,
+typedef struct		s_opts
+{
+	int				opt;
+	int				len;
+}					t_opts;
+
+typedef void		(*t_funct)(char *val, t_opts opt, char *name,
 	int hash_choice);
 typedef void		(*t_algo_print)(t_hash *hash);
 
-void				print_algo(t_hash *hash, char opt);
-int					ft_algo_choice(char *val, char *opt, int hash_choice);
-int					ft_stdin(int i, int argc, char *opt, int hash_choice);
+void				print_algo(t_hash *hash, t_opts opt);
+int					ft_algo_choice(char *val, t_opts *opt, int hash_choice);
+int					ft_stdin(int i, int argc, t_opts *opt, int hash_choice);
 char				**algo_name(void);
 
-void				ft_md5_string(char *val, char opt, char *name,
+void				ft_md5_string(char *val, t_opts opt, char *name,
 	int hash_choice);
 void				ft_print_hash_md5(t_hash *hash);
 
 void				ft_print_hash_sha256(t_hash *hash);
-void				ft_sha256_string(char *val, char opt, char *name,
+void				ft_sha256_string(char *val, t_opts opt, char *name,
 	int hash_choice);
 
 uint64_t			swap_uint64(uint64_t val);
 int					ft_open_file(int *fd, char *val);
-int					ft_files(char *val, char **str);
+int					ft_files(char *val, char **str, t_opts *opt);
 int					print_usage(char *str);
 int					print_errors(char *str);
 
@@ -87,11 +93,12 @@ void				ft_init_hash_md5(t_hash *hash, char *name, int hash_choice);
 void				ft_init_hash_sha256(t_hash *hash, char *name,
 	int hash_choice);
 void				ft_fill_hash(t_hash *hash, int choice);
-void				ft_init_message(t_algo *md5, char *val);
+void				ft_init_message(t_algo *md5, char *val, t_opts opt);
 
-int					ft_check_options(char *arg, char *opt);
+t_opts				ft_init_opts(void);
+int					ft_check_options(char *arg, t_opts *opt);
 void				free_hash_names(char **hash_names);
-int					ft_options(int *i, char *opt, int argc, char **argv);
-int					ft_hash_name(int *hash_choice, char *opt, char *algo);
+int					ft_options(int *i, t_opts *opt, int argc, char **argv);
+int					ft_hash_name(int *hash_choice, t_opts *opt, char *algo);
 
 #endif

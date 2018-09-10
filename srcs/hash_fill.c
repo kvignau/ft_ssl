@@ -12,9 +12,9 @@
 
 #include "../includes/ft_ssl.h"
 
-void		ft_init_message(t_algo *md5, char *val)
+void		ft_init_message(t_algo *md5, char *val, t_opts opt)
 {
-	md5->message_len = ft_strlen(val);
+	md5->message_len = opt.len;
 	md5->size_all = md5->message_len + 1;
 	while (md5->size_all % 64 != 56)
 		md5->size_all++;

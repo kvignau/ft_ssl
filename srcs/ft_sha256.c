@@ -74,7 +74,8 @@ static void				function_sha256(t_hash *hash)
 	}
 }
 
-static void				hash_proc_sha256(t_algo sha256, t_hash *hash, char opt)
+static void				hash_proc_sha256(t_algo sha256, t_hash *hash,
+	t_opts opt)
 {
 	size_t				offset;
 	int					i;
@@ -111,7 +112,7 @@ void					ft_print_hash_sha256(t_hash *hash)
 	}
 }
 
-void					ft_sha256_string(char *val, char opt,
+void					ft_sha256_string(char *val, t_opts opt,
 	char *name, int hash_choice)
 {
 	t_algo				sha256;
@@ -119,7 +120,7 @@ void					ft_sha256_string(char *val, char opt,
 	t_hash				hash;
 
 	ft_init_hash_sha256(&hash, name, hash_choice);
-	ft_init_message(&sha256, val);
+	ft_init_message(&sha256, val, opt);
 	sha256.data[sha256.message_len] = (char)(1 << 7);
 	ft_memset(sha256.data + sha256.message_len + 1, 0,
 		sha256.size_all - (sha256.message_len + 1));

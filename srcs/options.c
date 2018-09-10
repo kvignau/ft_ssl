@@ -12,7 +12,16 @@
 
 #include "../includes/ft_ssl.h"
 
-int			ft_check_options(char *arg, char *opt)
+t_opts		ft_init_opts(void)
+{
+	t_opts	opt;
+
+	opt.len = 0;
+	opt.opt = 0;
+	return (opt);
+}
+
+int			ft_check_options(char *arg, t_opts *opt)
 {
 	int		i;
 
@@ -20,13 +29,13 @@ int			ft_check_options(char *arg, char *opt)
 	while (arg && arg[i])
 	{
 		if (arg[i] == 'p')
-			(*opt) = (*opt) | OPT_P;
+			opt->opt = opt->opt | OPT_P;
 		else if (arg[i] == 'q')
-			(*opt) = (*opt) | OPT_Q;
+			opt->opt = opt->opt | OPT_Q;
 		else if (arg[i] == 'r')
-			(*opt) = (*opt) | OPT_R;
+			opt->opt = opt->opt | OPT_R;
 		else if (arg[i] == 's')
-			(*opt) = (*opt) | OPT_S;
+			opt->opt = opt->opt | OPT_S;
 		else
 		{
 			print_errors("ft_ssl: illegal option -- ");
@@ -52,7 +61,7 @@ void		free_hash_names(char **hash_names)
 	free(hash_names);
 }
 
-int			ft_options(int *i, char *opt, int argc, char **argv)
+int			ft_options(int *i, t_opts *opt, int argc, char **argv)
 {
 	while ((*i) < argc && argv[(*i)][0] == '-')
 	{
@@ -70,7 +79,7 @@ int			ft_options(int *i, char *opt, int argc, char **argv)
 	return (EXIT_SUCCESS);
 }
 
-int			ft_hash_name(int *hash_choice, char *opt, char *algo)
+int			ft_hash_name(int *hash_choice, t_opts *opt, char *algo)
 {
 	char	**hash_names;
 
@@ -81,7 +90,7 @@ int			ft_hash_name(int *hash_choice, char *opt, char *algo)
 	{
 		if (ft_strcmp(algo, hash_names[(*hash_choice)]) == 0)
 		{
-			(*opt) = (*opt) | OPT_GH;
+			opt->opt = opt->opt | OPT_GH;
 			free_hash_names(hash_names);
 			return (EXIT_SUCCESS);
 		}

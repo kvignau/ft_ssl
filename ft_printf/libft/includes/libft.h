@@ -111,5 +111,8 @@ void				ft_lstdbldel(t_dbllist **list);
 void				ft_lstdbladdfront(t_dbllist **list, void *content,\
 					size_t cont_size);
 char				*ft_strjoinandfree(char const *s1, char const *s2, int i);
+void				*ft_memdup(const void *src, size_t n);
+void				*ft_memjoin(void const *s1, void const *s2, size_t size1,
+	size_t size2);
 
 #endif

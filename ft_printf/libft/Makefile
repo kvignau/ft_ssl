@@ -89,6 +89,8 @@ C_FILES += ft_strtrim.c
 C_FILES += ft_strupper.c
 C_FILES += ft_tolower.c
 C_FILES += ft_toupper.c
+C_FILES += ft_memdup.c
+C_FILES += ft_memjoin.c
 
 O_FILES = $(addprefix $(O_DIR),$(C_FILES:.c=.o))
 

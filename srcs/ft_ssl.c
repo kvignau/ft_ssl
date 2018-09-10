@@ -24,18 +24,18 @@ char		**algo_name(void)
 	return (hash_names);
 }
 
-void		print_algo(t_hash *h, char opt)
+void		print_algo(t_hash *h, t_opts opt)
 {
 	char	**algo;
 
-	if ((opt & OPT_P) && (opt & OPT_STDIN))
+	if ((opt.opt & OPT_P) && (opt.opt & OPT_STDIN))
 		ft_printf("%s", h->file_name);
-	else if (!(opt & OPT_R) && !(opt & OPT_STDIN))
+	else if (!(opt.opt & OPT_R) && !(opt.opt & OPT_STDIN))
 	{
-		if (!(opt & OPT_Q))
+		if (!(opt.opt & OPT_Q))
 		{
 			algo = algo_name();
-			if (opt & OPT_S)
+			if (opt.opt & OPT_S)
 				ft_printf("%s (\"%s\") = ", algo[h->hash_choice], h->file_name);
 			else
 				ft_printf("%s (%s) = ", algo[h->hash_choice], h->file_name);
@@ -43,9 +43,9 @@ void		print_algo(t_hash *h, char opt)
 		}
 	}
 	g_print_funct[h->hash_choice](h);
-	if (!(opt & OPT_STDIN) && (opt & OPT_R) && !(opt & OPT_Q))
+	if (!(opt.opt & OPT_STDIN) && (opt.opt & OPT_R) && !(opt.opt & OPT_Q))
 	{
-		if (opt & OPT_S)
+		if (opt.opt & OPT_S)
 			ft_printf(" \"%s\"", h->file_name);
 		else
 			ft_printf(" %s", h->file_name);
@@ -53,19 +53,21 @@ void		print_algo(t_hash *h, char opt)
 	ft_putchar('\n');
 }
 
-int			ft_algo_choice(char *val, char *opt, int hash_choice)
+int			ft_algo_choice(char *val, t_opts *opt, int hash_choice)
 {
 	char	*str;
 
 	str = NULL;
-	if ((*opt) & OPT_S)
+	if (opt->opt & OPT_S)
 	{
-		g_functions[hash_choice](val, (*opt), val, hash_choice);
-		(*opt) = (*opt) & ~OPT_S;
+		opt->len = ft_strlen(val);
+		g_functions[hash_choice](val, *opt, val, hash_choice);
+		opt->opt = opt->opt & ~OPT_S;
+		opt->len = 0;
 	}
 	else
 	{
-		if (ft_files(val, &str) == EXIT_FAILURE)
+		if (ft_files(val, &str, opt) == EXIT_FAILURE)
 		{
 			if (str)
 				free(str);
@@ -73,13 +75,14 @@ int			ft_algo_choice(char *val, char *opt, int hash_choice)
 		}
 		if (!str)
 			str = ft_strdup("\0");
-		g_functions[hash_choice](str, (*opt), val, hash_choice);
+		g_functions[hash_choice](str, *opt, val, hash_choice);
+		opt->len = 0;
 		free(str);
 	}
 	return (EXIT_SUCCESS);
 }
 
-int			ft_stdin(int i, int argc, char *opt, int hash_choice)
+int			ft_stdin(int i, int argc, t_opts *opt, int hash_choice)
 {
 	int		ret;
 	char	buf[BUFF_SIZE + 1];
@@ -87,22 +90,22 @@ int			ft_stdin(int i, int argc, char *opt, int hash_choice)
 
 	ret = 0;
 	str = NULL;
-	if (i >= argc || (*opt) & OPT_P)
+	if (i >= argc || opt->opt & OPT_P)
 	{
-		(*opt) = (*opt) | OPT_STDIN;
+		opt->opt = opt->opt | OPT_STDIN;
 		while ((ret = read(0, buf, BUFF_SIZE)) > 0)
 		{
-			if (ret < 0)
-				return (print_errors("Read error"));
 			buf[ret] = '\0';
 			if (!str)
 				str = ft_strdup(buf);
 			else
-				str = ft_strjoin(str, buf);
+				str = ft_strjoinandfree(str, buf, 1);
+			opt->len += ret;
 		}
 		!str ? str = ft_strdup("\0") : NULL;
-		g_functions[hash_choice](str, (*opt), str, hash_choice);
-		(*opt) = (*opt) & ~OPT_STDIN;
+		g_functions[hash_choice](str, *opt, str, hash_choice);
+		opt->opt = opt->opt & ~OPT_STDIN;
+		opt->len = 0;
 		str ? free(str) : NULL;
 	}
 	return (EXIT_SUCCESS);
@@ -112,16 +115,16 @@ int			main(int argc, char **argv)
 {
 	int		i;
 	int		hash_choice;
-	char	opt;
+	t_opts	opt;
 
 	hash_choice = 0;
-	opt = 0;
+	opt = ft_init_opts();
 	i = 2;
 	if (argc < 2)
 		return (print_usage(argv[0]));
 	if (ft_hash_name(&hash_choice, &opt, argv[1]) == EXIT_FAILURE)
 		return (EXIT_FAILURE);
-	if (!(opt & OPT_GH))
+	if (!(opt.opt & OPT_GH))
 		return (print_usage(argv[0]));
 	if (ft_options(&i, &opt, argc, argv) == EXIT_FAILURE)
 		return (EXIT_FAILURE);
